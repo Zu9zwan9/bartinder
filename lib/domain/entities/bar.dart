@@ -14,6 +14,9 @@ class Bar extends Equatable {
   final bool hasDiscount; // Whether the bar offers discounts for app users
   final int? discountPercentage;
   final int? plannedVisitorsCount; // Number of users planning to visit
+  final String? crowdLevel; // e.g., "Low", "Medium", "High"
+  final List<String> usersHeadingThere; // IDs of users heading to this bar
+  final List<Event>? events; // Live events at the bar
 
   const Bar({
     required this.id,
@@ -22,12 +25,15 @@ class Bar extends Equatable {
     required this.latitude,
     required this.longitude,
     required this.distance,
+    this.crowdLevel,
     this.photoUrl,
     this.description,
     this.beerTypes = const [],
     this.hasDiscount = false,
     this.discountPercentage,
     this.plannedVisitorsCount,
+    this.usersHeadingThere = const [],
+    this.events,
   });
 
   @override
@@ -44,5 +50,28 @@ class Bar extends Equatable {
         hasDiscount,
         discountPercentage,
         plannedVisitorsCount,
+        crowdLevel,
+        usersHeadingThere,
+        events,
       ];
+}
+
+/// Represents an event at a bar
+class Event extends Equatable {
+  final String id;
+  final String name;
+  final String description;
+  final DateTime startTime;
+  final DateTime? endTime;
+
+  const Event({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.startTime,
+    this.endTime,
+  });
+
+  @override
+  List<Object?> get props => [id, name, description, startTime, endTime];
 }

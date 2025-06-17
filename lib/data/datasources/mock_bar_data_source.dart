@@ -5,7 +5,7 @@ class MockBarDataSource {
   /// Returns a list of mock bars
   List<Bar> getBars() {
     return [
-      const Bar(
+      Bar(
         id: '1',
         name: 'Bierkraft',
         address: '123 Beer St, Downtown',
@@ -18,8 +18,19 @@ class MockBarDataSource {
         hasDiscount: true,
         discountPercentage: 10,
         plannedVisitorsCount: 5,
+        crowdLevel: 'High',
+        usersHeadingThere: ['1', '3', '5'],
+        events: [
+          Event(
+            id: '101',
+            name: 'IPA Tasting Night',
+            description: 'Sample our new collection of IPAs from local breweries',
+            startTime: DateTime.now().add(const Duration(hours: 2)),
+            endTime: DateTime.now().add(const Duration(hours: 5)),
+          ),
+        ],
       ),
-      const Bar(
+      Bar(
         id: '2',
         name: 'Bierhaus',
         address: '456 Ale Ave, Midtown',
@@ -32,8 +43,19 @@ class MockBarDataSource {
         hasDiscount: true,
         discountPercentage: 15,
         plannedVisitorsCount: 8,
+        crowdLevel: 'Medium',
+        usersHeadingThere: ['2', '4'],
+        events: [
+          Event(
+            id: '201',
+            name: 'Oktoberfest Celebration',
+            description: 'Traditional German music, food, and beer specials',
+            startTime: DateTime.now().add(const Duration(days: 1)),
+            endTime: DateTime.now().add(const Duration(days: 1, hours: 8)),
+          ),
+        ],
       ),
-      const Bar(
+      Bar(
         id: '3',
         name: 'The Pilsner Pub',
         address: '789 Hops Blvd, Uptown',
@@ -45,8 +67,11 @@ class MockBarDataSource {
         beerTypes: ['Pilsner', 'Lager', 'Kölsch'],
         hasDiscount: false,
         plannedVisitorsCount: 3,
+        crowdLevel: 'Low',
+        usersHeadingThere: [],
+        events: [],
       ),
-      const Bar(
+      Bar(
         id: '4',
         name: 'Dark Horse Brewery',
         address: '101 Malt Road, Eastside',
@@ -59,8 +84,26 @@ class MockBarDataSource {
         hasDiscount: true,
         discountPercentage: 20,
         plannedVisitorsCount: 12,
+        crowdLevel: 'High',
+        usersHeadingThere: ['1', '2', '3', '5'],
+        events: [
+          Event(
+            id: '401',
+            name: 'Stout Showcase',
+            description: 'Featuring our award-winning imperial stouts',
+            startTime: DateTime.now().add(const Duration(hours: 1)),
+            endTime: DateTime.now().add(const Duration(hours: 4)),
+          ),
+          Event(
+            id: '402',
+            name: 'Brewery Tour',
+            description: 'Behind-the-scenes look at our brewing process',
+            startTime: DateTime.now().add(const Duration(days: 2)),
+            endTime: DateTime.now().add(const Duration(days: 2, hours: 2)),
+          ),
+        ],
       ),
-      const Bar(
+      Bar(
         id: '5',
         name: 'Wheat & Hops',
         address: '202 Barley Lane, Westside',
@@ -72,6 +115,17 @@ class MockBarDataSource {
         beerTypes: ['Hefeweizen', 'Witbier', 'American Wheat', 'Berliner Weisse'],
         hasDiscount: false,
         plannedVisitorsCount: 4,
+        crowdLevel: 'Medium',
+        usersHeadingThere: ['4'],
+        events: [
+          Event(
+            id: '501',
+            name: 'Board Game Night',
+            description: 'Bring friends for games and beer specials',
+            startTime: DateTime.now().add(const Duration(days: 1, hours: 18)),
+            endTime: DateTime.now().add(const Duration(days: 1, hours: 22)),
+          ),
+        ],
       ),
     ];
   }

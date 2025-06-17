@@ -53,6 +53,12 @@ dependencies:
   glassmorphism: ^3.0.0
   flutter_neumorphic: ^3.2.0
 
+  # Location
+  geolocator: ^14.0.1
+
+  # Utilities
+  url_launcher: ^6.2.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

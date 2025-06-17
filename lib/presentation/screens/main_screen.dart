@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
 import '../widgets/app_bottom_navigation.dart';
+import 'bars_screen.dart';
 import 'home_screen.dart';
+import 'matches_screen.dart';
+import 'profile_screen.dart';
 
 /// Main screen with bottom navigation
 class MainScreen extends StatefulWidget {
@@ -44,57 +47,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Placeholder for the Bars screen
-class BarsScreen extends StatelessWidget {
-  const BarsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Discover Bars'),
-      ),
-      child: Center(
-        child: Text('Bars screen coming soon!'),
-      ),
-    );
-  }
-}
-
-/// Placeholder for the Matches screen
-class MatchesScreen extends StatelessWidget {
-  const MatchesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Your Matches'),
-      ),
-      child: Center(
-        child: Text('Matches screen coming soon!'),
-      ),
-    );
-  }
-}
-
-/// Placeholder for the Profile screen
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Your Profile'),
-      ),
-      child: Center(
-        child: Text('Profile screen coming soon!'),
       ),
     );
   }
