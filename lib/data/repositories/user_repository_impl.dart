@@ -13,13 +13,13 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<List<User>> getUsers() async {
-    // todo In a real app, we would filter out users that have already been liked or disliked
+    // TODO In a real app, we would filter out users that have already been liked or disliked
     return _dataSource.getUsers();
   }
 
   @override
   Future<void> likeUser(String userId) async {
-    // todo In a real app, we would store this in a database
+    // TODO In a real app, we would store this in a database
     final prefs = await SharedPreferences.getInstance();
     final likedUsers = prefs.getStringList('liked_users') ?? [];
     if (!likedUsers.contains(userId)) {
@@ -30,7 +30,7 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<void> dislikeUser(String userId) async {
-    // todo In a real app, we would store this in a database
+    // TODO In a real app, we would store this in a database
     final prefs = await SharedPreferences.getInstance();
     final dislikedUsers = prefs.getStringList('disliked_users') ?? [];
     if (!dislikedUsers.contains(userId)) {
@@ -41,7 +41,7 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<List<String>> getMatches() async {
-    // todo In a real app, we would check if users we liked also liked us
+    // TODO In a real app, we would check if users we liked also liked us
     // For now, we'll just return a subset of the liked users as "matches"
     final prefs = await SharedPreferences.getInstance();
     final likedUsers = prefs.getStringList('liked_users') ?? [];

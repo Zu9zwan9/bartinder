@@ -119,7 +119,7 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
     Emitter<MatchesState> emit,
   ) async {
     try {
-      // todo In a real app, we would send the message to a backend
+      // TODO In a real app, we would send the message to a backend
       // For now, we'll just emit a success state
       emit(MessageSent(event.userId, event.message));
 
@@ -138,7 +138,7 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
       // Get the bar name
       final bar = await _barRepository.getBarById(event.barId);
       if (bar != null) {
-        // todo In a real app, we would send the invitation to a backend
+        // TODO In a real app, we would send the invitation to a backend
         // For now, we'll just emit a success state
         emit(InviteSent(event.userId, event.barId, bar.name));
       } else {

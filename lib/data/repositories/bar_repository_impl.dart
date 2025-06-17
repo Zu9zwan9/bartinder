@@ -13,7 +13,7 @@ class BarRepositoryImpl implements BarRepository {
 
   @override
   Future<List<Bar>> getBars() async {
-    // todo In a real app, we would filter based on user preferences and location
+    // TODO In a real app, we would filter based on user preferences and location
     return _dataSource.getBars();
   }
 
@@ -29,7 +29,7 @@ class BarRepositoryImpl implements BarRepository {
 
   @override
   Future<void> likeBar(String barId) async {
-    // todo In a real app, we would store this in a database
+    // TODO In a real app, we would store this in a database
     final prefs = await SharedPreferences.getInstance();
     final likedBars = prefs.getStringList('liked_bars') ?? [];
     if (!likedBars.contains(barId)) {
@@ -40,7 +40,7 @@ class BarRepositoryImpl implements BarRepository {
 
   @override
   Future<void> dislikeBar(String barId) async {
-    // todo  In a real app, we would store this in a database
+    // TODO  In a real app, we would store this in a database
     final prefs = await SharedPreferences.getInstance();
     final dislikedBars = prefs.getStringList('disliked_bars') ?? [];
     if (!dislikedBars.contains(barId)) {
@@ -51,7 +51,7 @@ class BarRepositoryImpl implements BarRepository {
 
   @override
   Future<void> checkIn(String barId) async {
-    // todo In a real app, we would store this in a database with timestamp
+    // TODO In a real app, we would store this in a database with timestamp
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('last_checkin', barId);
     await prefs.setInt('last_checkin_time', DateTime.now().millisecondsSinceEpoch);
@@ -59,7 +59,7 @@ class BarRepositoryImpl implements BarRepository {
 
   @override
   Future<List<Bar>> getBarsWithPlannedVisits() async {
-    // todo In a real app, we would query a database for bars with planned visits
+    // TODO In a real app, we would query a database for bars with planned visits
     // For now, we'll just return bars that have plannedVisitorsCount > 0
     final bars = _dataSource.getBars();
     return bars.where((bar) => bar.plannedVisitorsCount != null && bar.plannedVisitorsCount! > 0).toList();

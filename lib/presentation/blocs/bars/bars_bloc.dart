@@ -95,7 +95,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
       // Get bars
       final bars = await _getBarsUseCase.execute();
 
-      // todo In a real app, we would update the distances based on the current position
+      // TODO In a real app, we would update the distances based on the current position
       // For now, we'll just return the bars as they are
       emit(BarsLoaded(bars));
     } catch (e) {

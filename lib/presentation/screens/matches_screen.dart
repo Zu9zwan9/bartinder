@@ -1,6 +1,6 @@
-// TODO Implement this library.
-import 'package:flutter/material.dart';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../blocs/matches/matches_bloc.dart';
@@ -45,16 +45,40 @@ class _MatchesScreenState extends State<MatchesScreen> {
           child: BlocConsumer<MatchesBloc, MatchesState>(
             listener: (context, state) {
               if (state is MessageSent) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Message sent!')),
+                showCupertinoDialog(
+                  context: context,
+                  builder: (_) => CupertinoAlertDialog(
+                    title: const Text('Message Sent'),
+                    content: const Text('Your message has been sent!'),
+                    actions: [CupertinoDialogAction(
+                      child: const Text('OK'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    )],
+                  ),
                 );
               } else if (state is InviteSent) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Invited to ${state.barName}!')),
+                showCupertinoDialog(
+                  context: context,
+                  builder: (_) => CupertinoAlertDialog(
+                    title: const Text('Invitation Sent'),
+                    content: Text('Invited to ${state.barName}!'),
+                    actions: [CupertinoDialogAction(
+                      child: const Text('OK'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    )],
+                  ),
                 );
               } else if (state is MatchesError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
+                showCupertinoDialog(
+                  context: context,
+                  builder: (_) => CupertinoAlertDialog(
+                    title: const Text('Error'),
+                    content: Text(state.message),
+                    actions: [CupertinoDialogAction(
+                      child: const Text('OK'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    )],
+                  ),
                 );
               }
             },
@@ -70,28 +94,49 @@ class _MatchesScreenState extends State<MatchesScreen> {
                   padding: const EdgeInsets.all(16),
                   itemCount: matches.length,
                   itemBuilder: (context, index) {
-                    final User user = matches[index];
-                    return Card(
+                    final user = matches[index];
+                    return Container(
                       margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(user.photoUrl),
-                        ),
-                        title: Text('${user.name}, ${user.age}'),
-                        subtitle: Text(user.favoriteBeer),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(CupertinoIcons.chat_bubble_2_fill),
-                              onPressed: () => _showMessageDialog(user),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.systemGrey6,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(user.photoUrl),
+                            radius: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${user.name}, ${user.age}',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: CupertinoColors.black)),
+                                const SizedBox(height: 4),
+                                Text(user.favoriteBeer,
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: CupertinoColors.systemGrey)),
+                              ],
                             ),
-                            IconButton(
-                              icon: const Icon(CupertinoIcons.location_solid),
-                              onPressed: () => _matchesBloc.add(InviteToBar(user.id, '1')),
-                            ),
-                          ],
-                        ),
+                          ),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            child: const Icon(CupertinoIcons.chat_bubble_2_fill),
+                            onPressed: () => _showMessageDialog(user),
+                          ),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            child: const Icon(CupertinoIcons.location_solid),
+                            onPressed: () => _matchesBloc.add(InviteToBar(user.id, '1')),
+                          ),
+                        ],
                       ),
                     );
                   },

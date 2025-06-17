@@ -82,8 +82,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Refresh stats button
             CupertinoButton(
               color: CupertinoColors.activeBlue,
-              child: const Text('Refresh Stats'),
               onPressed: _loadStats,
+              child: const Text('Refresh Stats'),
             ),
             const SizedBox(height: 16),
             // Clear stored data

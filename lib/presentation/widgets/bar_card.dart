@@ -24,7 +24,7 @@ class BarCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha(26),
               blurRadius: 8,
               spreadRadius: 2,
             ),
@@ -68,16 +68,16 @@ class BarCard extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.white.withOpacity(0.1),
-                      Colors.white.withOpacity(0.3),
+                      Colors.white.withAlpha(26),
+                      Colors.white.withAlpha(76),
                     ],
                   ),
                   borderGradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.white.withOpacity(0.1),
-                      Colors.white.withOpacity(0.1),
+                      Colors.white.withAlpha(26),
+                      Colors.white.withAlpha(26),
                     ],
                   ),
                   child: Padding(
@@ -96,7 +96,7 @@ class BarCard extends StatelessWidget {
                                   shadows: [
                                     Shadow(
                                       blurRadius: 4,
-                                      color: Colors.black.withOpacity(0.5),
+                                      color: Colors.black.withAlpha(128),
                                       offset: const Offset(1, 1),
                                     ),
                                   ],
@@ -143,7 +143,7 @@ class BarCard extends StatelessWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withOpacity(0.8),
+                                color: AppTheme.primaryColor.withAlpha(204),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -255,7 +255,7 @@ class BarCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.8),
+        color: color.withAlpha(204),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

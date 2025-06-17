@@ -42,7 +42,7 @@ class UserSwipeBloc extends Bloc<UserSwipeEvent, UserSwipeState> {
       try {
         await _userRepository.likeUser(event.user.id);
 
-        // todo Check if this creates a match (in a real app, this would be determined by the backend)
+        // TODO Check if this creates a match (in a real app, this would be determined by the backend)
         final matches = await _userRepository.getMatches();
         if (matches.contains(event.user.id)) {
           // If it's a match, emit the match state
