@@ -7,6 +7,8 @@
 
 	<key>CFBundleDisplayName</key>
 	<string>Beertinder</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs your location to provide personalized experiences and discover bars around you.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

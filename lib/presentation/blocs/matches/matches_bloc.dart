@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/repositories/bar_repository_impl.dart';
 import '../../../data/repositories/user_repository_impl.dart';
-import '../../../domain/entities/user.dart';
 import 'matches_event.dart';
 import 'matches_state.dart';
 
@@ -71,8 +70,12 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
       if (matches.contains(event.userId)) {
         // Get the user details
         final users = await _userRepository.getUsers();
-        final matchedUser = users.firstWhere((user) => user.id == event.userId);
-        emit(MatchFound(matchedUser));
+final matchedUser = users.where((user) => user.id == event.userId).isNotEmpty
+    ? users.firstWhere((user) => user.id == event.userId)
+    : null;
+if (matchedUser != null) {
+          emit(MatchFound(matchedUser));
+        }
       }
 
       // Refresh the potential matches
@@ -107,7 +110,6 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
 
       // Filter users to get only matches
       final matches = allUsers.where((user) => matchIds.contains(user.id)).toList();
-
       emit(MatchesLoaded(matches));
     } catch (e) {
       emit(MatchesError('Failed to load matches: ${e.toString()}'));
