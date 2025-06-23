@@ -1,82 +1,42 @@
 import 'package:flutter/cupertino.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide User;
-import 'package:beertinder/data/services/auth_service.dart';
-import '../../core/data/models/message_model.dart';
-import '../../domain/entities/user.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/services/auth_service.dart';
+import '../../domain/entities/user.dart' as domain;
+import '../../domain/entities/message.dart';
+import '../blocs/chat/chat_bloc.dart';
+import '../blocs/chat/chat_event.dart';
+import '../blocs/chat/chat_state.dart';
 
-class ChatScreen extends StatefulWidget {
-  final User matchedUser;
+class ChatScreen extends StatelessWidget {
+  final domain.User matchedUser;
   const ChatScreen({super.key, required this.matchedUser});
 
   @override
-  ChatScreenState createState() => ChatScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ChatBloc.withDefaultDependencies(matchedUser.id)
+        ..add(const LoadMessages()),
+      child: _ChatScreenContent(matchedUser: matchedUser),
+    );
+  }
 }
 
-class ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _controller = TextEditingController();
-  final SupabaseClient _supabase = Supabase.instance.client;
-  String? _matchId;
-  List<MessageModel> messages = [];
+class _ChatScreenContent extends StatefulWidget {
+  final domain.User matchedUser;
+  const _ChatScreenContent({required this.matchedUser});
 
   @override
-  void initState() {
-    super.initState();
-    _initChat();
-  }
+  _ChatScreenContentState createState() => _ChatScreenContentState();
+}
 
-  Future<void> _initChat() async {
-    final currentId = AuthService.currentUserId;
-    if (currentId == null) return;
-    // get match record id
-    final data = await _supabase.from('likes')
-        .select('id')
-        .eq('from_user', currentId)
-        .eq('to_user', widget.matchedUser.id)
-        .limit(1);
-    String? matchId;
-    if ((data as List).isNotEmpty) {
-      matchId = (data[0])['id'] as String;
-    }
-    if (matchId != null) {
-      setState(() => _matchId = matchId);
-      await _loadMessages();
-      _listenForMessages();
-    }
-  }
+class _ChatScreenContentState extends State<_ChatScreenContent> {
+  final TextEditingController _controller = TextEditingController();
 
-  Future<void> _loadMessages() async {
-    if (_matchId == null) return;
-    final data = await _supabase.from('messages').select().eq('match_id', _matchId!).order('sent_at', ascending: true);
-    final list = (data as List)
-        .map((m) => MessageModel.fromMap(m as Map<String, dynamic>))
-        .toList();
-    setState(() => messages = list);
-  }
-
-  void _listenForMessages() {
-    if (_matchId == null) return;
-    _supabase
-        .from('messages')
-        .stream(primaryKey: ['id'])
-        .eq('match_id', _matchId!)
-        .listen((List<Map<String, dynamic>> newRecords) {
-          final newMessages = newRecords
-              .map((m) => MessageModel.fromMap(m))
-              .toList();
-          setState(() => messages = newMessages);
-        });
-  }
-
-  Future<void> _sendMessage() async {
-    if (_matchId == null) return;
+  void _sendMessage() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
-    final currentId = AuthService.currentUserId!;
-    await _supabase.from('messages').insert({
-      'match_id': _matchId!,
-      'sender_id': currentId,
-      'text': text,
-    });
+
+    context.read<ChatBloc>().add(SendTextMessage(text));
     _controller.clear();
   }
 
@@ -93,42 +53,66 @@ class ChatScreenState extends State<ChatScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                itemCount: messages.length,
-                reverse: false,
-                itemBuilder: (context, index) {
-                  final m = messages[index];
-                  final isMe = m.senderId == AuthService.currentUserId;
-                  return Align(
-                    alignment: isMe
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isMe
-                            ? CupertinoColors.activeBlue
-                            : CupertinoColors.systemGrey4,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
+              child: BlocBuilder<ChatBloc, ChatState>(
+                builder: (context, state) {
+                  if (state is ChatLoading) {
+                    return const Center(
+                      child: CupertinoActivityIndicator(),
+                    );
+                  } else if (state is ChatError) {
+                    return Center(
                       child: Text(
-                        m.text ?? '',
-                        style: TextStyle(
-                          color: isMe
-                              ? CupertinoColors.white
-                              : CupertinoColors.black,
+                        state.message,
+                        style: const TextStyle(
+                          color: CupertinoColors.systemRed,
                           fontSize: 16,
                         ),
                       ),
-                    ),
+                    );
+                  } else if (state is ChatLoaded) {
+                    final messages = state.messages;
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      itemCount: messages.length,
+                      reverse: false,
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        final isMe = message.senderId == AuthService.currentUserId;
+                        return Align(
+                          alignment: isMe
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isMe
+                                  ? CupertinoColors.activeBlue
+                                  : CupertinoColors.systemGrey4,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Text(
+                              message.text ?? message.content ?? '',
+                              style: TextStyle(
+                                color: isMe
+                                    ? CupertinoColors.white
+                                    : CupertinoColors.black,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return const Center(
+                    child: Text('Start a conversation!'),
                   );
                 },
               ),
@@ -161,7 +145,7 @@ class ChatScreenState extends State<ChatScreen> {
                   CupertinoButton(
                     padding: const EdgeInsets.all(0),
                     onPressed: _sendMessage,
-                    child: Icon(
+                    child: const Icon(
                       CupertinoIcons.arrow_up_circle_fill,
                       color: CupertinoColors.activeBlue,
                       size: 32,
