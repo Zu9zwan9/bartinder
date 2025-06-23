@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
@@ -20,11 +21,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _likedBars = 0;
   int _matches = 0;
   bool _isUpdatingAvatar = false;
+  String? _avatarUrl;
 
   @override
   void initState() {
     super.initState();
     _loadStats();
+    _loadProfile();
+  }
+
+  // Load avatar url from users table
+  Future<void> _loadProfile() async {
+    final userId = AuthService.currentUserId;
+    if (userId == null) return;
+    final dynamic data = await Supabase.instance.client
+        .from('users')
+        .select('avatar_url')
+        .eq('id', userId)
+        .single();
+    final String? url = data['avatar_url'] as String?;
+    if (mounted) {
+      setState(() {
+        _avatarUrl = url;
+      });
+    }
   }
 
   Future<void> _loadStats() async {
@@ -119,32 +139,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _generateNewRandomAvatar() async {
-    setState(() {
-      _isUpdatingAvatar = true;
-    });
-
+    setState(() => _isUpdatingAvatar = true);
     try {
-      final result = await AuthService.updateAvatar(AuthService.generateRandomAvatar());
+      final result = await AuthService.uploadRandomAvatar();
       if (result.isSuccess) {
-        context.read<AuthBloc>().add(const AuthStatusRequested());
-        if (mounted) {
-          _showSuccessMessage('Avatar updated successfully!');
-        }
+        await _loadProfile();
+        if (mounted) _showSuccessMessage('Avatar updated successfully!');
       } else {
-        if (mounted) {
-          _showErrorMessage(result.error?.message ?? 'Failed to update avatar');
-        }
+        if (mounted) _showErrorMessage(result.error?.message ?? 'Failed to update avatar');
       }
     } catch (e) {
-      if (mounted) {
-        _showErrorMessage('An error occurred while updating avatar');
-      }
+      if (mounted) _showErrorMessage('An error occurred while updating avatar');
     } finally {
-      if (mounted) {
-        setState(() {
-          _isUpdatingAvatar = false;
-        });
-      }
+      if (mounted) setState(() => _isUpdatingAvatar = false);
     }
   }
 
@@ -199,7 +206,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final user = state.user;
             final userName = user.userMetadata?['name'] as String? ?? 'User';
             final userAge = user.userMetadata?['age'] as int? ?? 0;
-            final avatarUrl = user.userMetadata?['avatar_url'] as String?;
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -231,9 +237,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ? const Center(
                                     child: CupertinoActivityIndicator(),
                                   )
-                                : avatarUrl != null
+                                : _avatarUrl != null && _avatarUrl!.isNotEmpty
                                     ? Image.network(
-                                        avatarUrl,
+                                        _avatarUrl!,
                                         width: 120,
                                         height: 120,
                                         fit: BoxFit.cover,

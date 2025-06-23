@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'storage_service.dart';
 
 /// Custom exception for authentication errors
 class AuthException implements Exception {
@@ -117,6 +118,35 @@ class AuthService {
       return AuthResult.failure(AuthException(
         code: 'unknown_error',
         message: 'An unexpected error occurred: $e',
+      ));
+    }
+  }
+
+  /// Generate a random avatar, upload to storage, and update user
+  static Future<AuthResult<User>> uploadRandomAvatar() async {
+    try {
+      final user = currentUser;
+      if (user == null) {
+        return AuthResult.failure(const AuthException(
+          code: 'not_authenticated',
+          message: 'User not authenticated',
+        ));
+      }
+      // Generate external avatar URL
+      final externalUrl = generateRandomAvatar();
+      // Define storage path
+      final path = 'images/${user.id}/${DateTime.now().millisecondsSinceEpoch}.svg';
+      // Upload and get signed URL
+      final storageUrl = await StorageService.uploadFromUrl(externalUrl, path);
+      // Update avatar metadata and users table
+      return await updateAvatar(storageUrl);
+    } catch (e) {
+      if (kDebugMode) {
+        print('uploadRandomAvatar error: $e');
+      }
+      return AuthResult.failure(AuthException(
+        code: 'avatar_upload_failed',
+        message: 'Failed to upload and set avatar: $e',
       ));
     }
   }
