@@ -251,8 +251,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
                               ? SvgPicture.network(
                                   _avatarUrl!,
-                                  width: 100,
-                                  height: 100,
+                        width: double.infinity,
+                        height: double.infinity,
                                   fit: BoxFit.cover,
                                   placeholderBuilder: (_) => const Center(child: CupertinoActivityIndicator()),
                                 )

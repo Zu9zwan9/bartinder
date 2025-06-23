@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'storage_service.dart';
 import 'user_profile_service.dart';
@@ -13,8 +15,6 @@ class AvatarService {
 
   /// Generate a unique seed for avatar generation
   static String _generateSeed(String userId) {
-    // Use user ID as base for consistent avatar generation
-    // Add some randomness to avoid predictable patterns
     final random = Random(userId.hashCode);
     return '${userId.substring(0, 8)}_${random.nextInt(999999)}';
   }
@@ -36,6 +36,16 @@ class AvatarService {
 
       // Create storage path: images/{userId}/avatar.svg
       final storagePath = 'images/$userId/avatar.svg';
+
+      // Delete old avatar if exists
+      final profile = await UserProfileService.fetchUserProfile(userId);
+      final oldUrl = profile?['avatar_url'] as String?;
+      if (oldUrl != null && oldUrl.isNotEmpty) {
+        final oldPath = StorageService.getPathFromUrl(oldUrl);
+        if (oldPath != null) {
+          await StorageService.deleteFile(oldPath); // Delete the old avatar
+        }
+      }
 
       if (kDebugMode) {
         print('Generating avatar for user $userId with seed: $seed');
@@ -79,8 +89,17 @@ class AvatarService {
       final avatarUrl = generateAvatarUrl(newSeed);
 
       // Create storage path with timestamp to avoid caching issues
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final storagePath = 'images/$userId/avatar_$timestamp.svg';
+      final storagePath = 'images/$userId/avatar_${DateTime.now().millisecondsSinceEpoch}.svg';
+
+      // Delete old avatar if exists
+      final profile = await UserProfileService.fetchUserProfile(userId);
+      final oldUrl = profile?['avatar_url'] as String?;
+      if (oldUrl != null && oldUrl.isNotEmpty) {
+        final oldPath = StorageService.getPathFromUrl(oldUrl);
+        if (oldPath != null) {
+          await StorageService.deleteFile(oldPath); // Delete the old avatar
+        }
+      }
 
       if (kDebugMode) {
         print('Regenerating avatar for user $userId with new seed: $newSeed');
@@ -156,6 +175,38 @@ class AvatarService {
     } catch (e) {
       if (kDebugMode) {
         print('Error initializing user avatar: $e');
+      }
+      return null;
+    }
+  }
+
+  /// Upload a custom avatar file for a user, deleting any existing avatar
+  static Future<String?> uploadCustomAvatar(String userId, File file) async {
+    try {
+      // Delete old avatar if exists
+      final profile = await UserProfileService.fetchUserProfile(userId);
+      final oldUrl = profile?['avatar_url'] as String?;
+      if (oldUrl != null && oldUrl.isNotEmpty) {
+        final oldPath = StorageService.getPathFromUrl(oldUrl);
+        if (oldPath != null) {
+          await StorageService.deleteFile(oldPath); // Delete the old avatar
+        }
+      }
+
+      // Prepare storage path with timestamp and original extension
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final ext = p.extension(file.path).replaceFirst('.', '');
+      final storagePath = 'images/$userId/avatar_$timestamp.$ext';
+
+      // Upload file
+      final storedUrl = await StorageService.uploadFile(file, storagePath);
+
+      // Update user profile
+      final success = await UserProfileService.updateAvatarUrl(userId, storedUrl);
+      return success ? storedUrl : null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error uploading custom avatar: $e');
       }
       return null;
     }

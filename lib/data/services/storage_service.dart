@@ -8,6 +8,9 @@ class StorageService {
   static final SupabaseClient _supabase = Supabase.instance.client;
   static final String _bucket = 'avatars'; // Supabase storage bucket for user avatars
 
+  /// Public getter for bucket name
+  static String get bucket => _bucket;
+
   /// Uploads a file to Supabase Storage under [path]
   /// Returns the public URL of the uploaded file
   static Future<String> uploadFile(
@@ -20,7 +23,7 @@ class StorageService {
           .from(_bucket)
           .uploadBinary(path, bytes, fileOptions: FileOptions(
         cacheControl: '3600',
-        upsert: false,
+        upsert: true, // overwrite existing file if present
       ));
     } catch (e) {
       throw Exception('Storage upload error: $e');
@@ -56,5 +59,27 @@ class StorageService {
       60 * 60 * 24 * 7,
     );
     return signedUrl;
+  }
+
+  /// Deletes a file at [path] from Supabase Storage bucket
+  static Future<void> deleteFile(String path) async {
+    try {
+      await _supabase.storage.from(_bucket).remove([path]);
+    } catch (e) {
+      throw Exception('Failed to delete file: $e');
+    }
+  }
+
+  /// Extracts storage path from a public or signed URL
+  static String? getPathFromUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final segments = uri.pathSegments;
+      final bucketIndex = segments.indexOf(_bucket);
+      if (bucketIndex < 0) return null;
+      return segments.skip(bucketIndex + 1).join('/');
+    } catch (_) {
+      return null;
+    }
   }
 }
