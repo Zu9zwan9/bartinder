@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:beertinder/data/repositories/supabase_user_repository_impl.dart';
 import 'package:beertinder/data/datasources/mock_user_data_source.dart';
 
 void main() {

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +6,6 @@ import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
 import '../../data/services/auth_service.dart';
-import '../../data/services/storage_service.dart';
 
 /// Production-ready profile screen following Apple HIG guidelines
 class ProfileScreen extends StatefulWidget {

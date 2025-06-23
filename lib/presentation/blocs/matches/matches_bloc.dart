@@ -1,17 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../data/repositories/supabase_user_repository_impl.dart';
 import '../../../data/repositories/bar_repository_impl.dart';
-import '../../../data/repositories/user_repository_impl.dart';
 import 'matches_event.dart';
 import 'matches_state.dart';
 
 /// BLoC for the Matches page
 class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
-  final UserRepositoryImpl _userRepository;
+  final SupabaseUserRepositoryImpl _userRepository;
   final BarRepositoryImpl _barRepository;
 
   MatchesBloc({
-    required UserRepositoryImpl userRepository,
+    required SupabaseUserRepositoryImpl userRepository,
     required BarRepositoryImpl barRepository,
   })  : _userRepository = userRepository,
         _barRepository = barRepository,
@@ -28,7 +28,7 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
   /// Convenience constructor with default dependencies
   factory MatchesBloc.withDefaultDependencies() {
     return MatchesBloc(
-      userRepository: UserRepositoryImpl(),
+      userRepository: SupabaseUserRepositoryImpl(),
       barRepository: BarRepositoryImpl(),
     );
   }

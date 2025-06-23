@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
-import 'package:flutter/foundation.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../services/auth_service.dart';
@@ -82,20 +81,23 @@ class SupabaseUserRepositoryImpl implements UserRepository {
   Future<List<String>> getMatches() async {
     try {
       final currentId = _currentUserId;
-      final likesData = await _supabase.from('likes')
-          .select('to_user')
-          .eq('from_user', currentId);
-      final likedIds = (likesData as List<dynamic>)
-          .map((e) => e['to_user'] as String);
-      final matches = <String>[];
-      for (var toId in likedIds) {
-        final mutualData = await _supabase.from('likes')
-            .select()
-            .eq('from_user', toId)
-            .eq('to_user', currentId);
-        if ((mutualData as List<dynamic>).isNotEmpty) matches.add(toId);
-      }
-      return matches;
+      // users that current user liked
+      final outgoing = await _supabase.from('likes')
+        .select('to_user')
+        .eq('from_user', currentId);
+      final likedIds = (outgoing as List<dynamic>)
+        .map((e) => e['to_user'] as String)
+        .toList();
+      // users that liked current user
+      final incoming = await _supabase.from('likes')
+        .select('from_user')
+        .eq('to_user', currentId);
+      final likerIds = (incoming as List<dynamic>)
+        .map((e) => e['from_user'] as String)
+        .toList();
+      // mutual likes
+      final mutual = likedIds.where((id) => likerIds.contains(id)).toList();
+      return mutual;
     } catch (e) {
       throw Exception('Error getting matches: $e');
     }

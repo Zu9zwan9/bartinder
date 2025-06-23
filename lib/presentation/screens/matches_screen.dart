@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +6,7 @@ import '../blocs/matches/matches_bloc.dart';
 import '../blocs/matches/matches_event.dart';
 import '../blocs/matches/matches_state.dart';
 import '../../domain/entities/user.dart';
+import 'chat_screen.dart';
 
 /// Screen showing user's matches
 class MatchesScreen extends StatefulWidget {
@@ -129,7 +129,13 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           CupertinoButton(
                             padding: EdgeInsets.zero,
                             child: const Icon(CupertinoIcons.chat_bubble_2_fill),
-                            onPressed: () => _showMessageDialog(user),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                CupertinoPageRoute(
+                                  builder: (_) => ChatScreen(matchedUser: user),
+                                ),
+                              );
+                            },
                           ),
                           CupertinoButton(
                             padding: EdgeInsets.zero,
