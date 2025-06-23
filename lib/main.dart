@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'data/services/auth_service.dart';
 
 import 'core/bloc_observer.dart';
 import 'presentation/app.dart';
@@ -18,6 +19,9 @@ void main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_KEY']!,
   );
+
+  // Initialize AuthService for listening to auth state
+  AuthService.initialize();
 
   // Set up BlocObserver for debugging
   Bloc.observer = AppBlocObserver();

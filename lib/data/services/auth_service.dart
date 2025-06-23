@@ -149,6 +149,13 @@ class AuthService {
         if (kDebugMode) {
           print('Sign up successful: ${response.user!.id}');
         }
+        // Ensure user exists in 'users' table for FK constraints
+        await _supabase.from('users').upsert({
+          'id': response.user!.id,
+          'email': response.user!.email,
+          'name': enrichedMetadata['name'] ?? response.user!.email?.split('@').first,
+          'password_hash': '',
+        });
         return AuthResult.success(response.user!);
       } else {
         return AuthResult.failure(
@@ -195,6 +202,13 @@ class AuthService {
         if (kDebugMode) {
           print('Sign in successful: ${response.user!.id}');
         }
+        // Ensure user exists in 'users' table
+        await _supabase.from('users').upsert({
+          'id': response.user!.id,
+          'email': response.user!.email,
+          'name': (response.user!.userMetadata?['name'] as String?) ?? response.user!.email!.split('@').first,
+          'password_hash': '',
+        });
         return AuthResult.success(response.user!);
       } else {
         return AuthResult.failure(

@@ -57,9 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state is UserSwipeLoading) {
                 return const Center(child: CupertinoActivityIndicator());
               } else if (state is UserSwipeLoaded) {
-                return state.users.isEmpty
-                    ? _buildEmptyState()
-                    : _buildSwipeCards(context, state.users);
+                return _buildSwipeCards(context, state.users);
               } else if (state is UserSwipeError) {
                 return Center(
                   child: Text(
@@ -79,25 +77,35 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSwipeCards(BuildContext context, List<User> users) {
+    final hasUsers = users.isNotEmpty;
+    final count = hasUsers ? users.length : 1;
     return Column(
       children: [
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: CardSwiper(
+              key: ValueKey(count),
               controller: _cardController,
-              cardsCount: users.length,
-              onSwipe: (prev, curr, dir) {
-                final user = users[prev];
-                _userSwipeBloc.add(
-                  dir == CardSwiperDirection.right ? LikeUser(user) : DislikeUser(user),
-                );
-                return true;
-              },
-              numberOfCardsDisplayed: math.min(3, users.length),
+              cardsCount: count,
+              onSwipe: hasUsers
+                  ? (prev, curr, dir) {
+                      final user = users[prev];
+                      _userSwipeBloc.add(
+                        dir == CardSwiperDirection.right
+                            ? LikeUser(user)
+                            : DislikeUser(user),
+                      );
+                      return true;
+                    }
+                  : (_, __, ___) => false,
+              numberOfCardsDisplayed: math.min(3, count),
               backCardOffset: const Offset(20, 20),
               padding: const EdgeInsets.all(24),
               cardBuilder: (BuildContext context, int index, int horizontalOffset, int verticalOffset) {
+                if (!hasUsers) {
+                  return _buildNoMoreCard();
+                }
                 return UserCard(user: users[index]);
               },
             ),
@@ -111,17 +119,70 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildActionButton(
                 icon: CupertinoIcons.xmark_circle_fill,
                 color: AppTheme.errorColor,
-                onTap: () => _cardController.swipe(CardSwiperDirection.left),
+                onTap: () {
+                  if (hasUsers) {
+                    _cardController.swipe(CardSwiperDirection.left);
+                  } else {
+                    _userSwipeBloc.add(const LoadUsers());
+                  }
+                },
               ),
               _buildActionButton(
                 icon: CupertinoIcons.heart_fill,
                 color: AppTheme.successColor,
-                onTap: () => _cardController.swipe(CardSwiperDirection.right),
+                onTap: () {
+                  if (hasUsers) {
+                    _cardController.swipe(CardSwiperDirection.right);
+                  } else {
+                    _userSwipeBloc.add(const LoadUsers());
+                  }
+                },
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNoMoreCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              CupertinoIcons.person_2_fill,
+              size: 80,
+              color: AppTheme.primaryColor.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No more beer buddies nearby',
+              style: AppTheme.titleStyle,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pull to refresh',
+              style: AppTheme.bodyStyle.copyWith(
+                color: AppTheme.secondaryTextColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
