@@ -1,12 +1,15 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/avatar_service.dart';
 
 /// Production-ready profile screen following Apple HIG guidelines
 class ProfileScreen extends StatefulWidget {
@@ -30,20 +33,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadProfile();
   }
 
-  // Load avatar url from users table
+  // Load avatar url from users table and initialize if needed
   Future<void> _loadProfile() async {
     final userId = AuthService.currentUserId;
     if (userId == null) return;
-    final dynamic data = await Supabase.instance.client
-        .from('users')
-        .select('avatar_url')
-        .eq('id', userId)
-        .single();
-    final String? url = data['avatar_url'] as String?;
-    if (mounted) {
-      setState(() {
-        _avatarUrl = url;
-      });
+
+    try {
+      // Get current avatar URL
+      String? url = await AvatarService.getCurrentUserAvatarUrl();
+
+      // If user doesn't have an avatar, initialize one
+      if (url == null || url.isEmpty) {
+        setState(() => _isUpdatingAvatar = true);
+        url = await AvatarService.initializeUserAvatar(userId);
+        setState(() => _isUpdatingAvatar = false);
+      }
+
+      if (mounted) {
+        setState(() {
+          _avatarUrl = url;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUpdatingAvatar = false;
+          _avatarUrl = null;
+        });
+      }
     }
   }
 
@@ -139,14 +156,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _generateNewRandomAvatar() async {
+    final userId = AuthService.currentUserId;
+    if (userId == null) {
+      _showErrorMessage('User not authenticated');
+      return;
+    }
+
     setState(() => _isUpdatingAvatar = true);
     try {
-      final result = await AuthService.uploadRandomAvatar();
-      if (result.isSuccess) {
-        await _loadProfile();
+      final newAvatarUrl = await AvatarService.regenerateAvatar(userId);
+      if (newAvatarUrl != null) {
+        setState(() {
+          _avatarUrl = newAvatarUrl;
+        });
         if (mounted) _showSuccessMessage('Avatar updated successfully!');
       } else {
-        if (mounted) _showErrorMessage(result.error?.message ?? 'Failed to update avatar');
+        if (mounted) _showErrorMessage('Failed to update avatar. Please try again.');
       }
     } catch (e) {
       if (mounted) _showErrorMessage('An error occurred while updating avatar');
@@ -207,129 +232,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final userName = user.userMetadata?['name'] as String? ?? 'User';
             final userAge = user.userMetadata?['age'] as int? ?? 0;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
+            // Display with Material ListView and CircleAvatar
+            return SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
                 children: [
-                  const SizedBox(height: 20),
-
-                  // Profile Avatar
-                  GestureDetector(
-                    onTap: _isUpdatingAvatar ? null : _changeAvatar,
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: CupertinoColors.systemGrey5.resolveFrom(context),
-                            border: Border.all(
-                              color: _isUpdatingAvatar
-                                  ? CupertinoColors.activeBlue
-                                  : CupertinoColors.systemGrey4.resolveFrom(context),
-                              width: 2,
-                            ),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: _isUpdatingAvatar
-                                ? const Center(
-                                    child: CupertinoActivityIndicator(),
-                                  )
-                                : _avatarUrl != null && _avatarUrl!.isNotEmpty
-                                    ? Image.network(
-                                        _avatarUrl!,
-                                        width: 120,
-                                        height: 120,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(
-                                            CupertinoIcons.person_fill,
-                                            size: 60,
-                                            color: CupertinoColors.systemGrey,
-                                          );
-                                        },
-                                      )
-                                    : const Icon(
-                                        CupertinoIcons.person_fill,
-                                        size: 60,
-                                        color: CupertinoColors.systemGrey,
-                                      ),
-                          ),
-                        ),
-                        if (!_isUpdatingAvatar)
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: CupertinoColors.activeBlue,
-                                border: Border.all(
-                                  color: CupertinoColors.systemBackground.resolveFrom(context),
-                                  width: 2,
+                  // Avatar display using SVG support
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: CupertinoColors.systemGrey5,
+                    ),
+                    child: ClipOval(
+                      child: _isUpdatingAvatar
+                          ? const Center(child: CupertinoActivityIndicator())
+                          : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                              ? SvgPicture.network(
+                                  _avatarUrl!,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  placeholderBuilder: (_) => const Center(child: CupertinoActivityIndicator()),
+                                )
+                              : const Icon(
+                                  CupertinoIcons.person_fill,
+                                  size: 50,
+                                  color: CupertinoColors.systemGrey,
                                 ),
-                              ),
-                              child: const Icon(
-                                CupertinoIcons.camera_fill,
-                                color: CupertinoColors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                      ],
                     ),
                   ),
-
-                  const SizedBox(height: 8),
-
-                  // Avatar change hint
-                  if (!_isUpdatingAvatar)
-                    Text(
-                      'Tap to change avatar',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: CupertinoColors.secondaryLabel.resolveFrom(context),
-                      ),
-                    ),
-
+                  const SizedBox(height: 12),
+                  // Button to regenerate avatar
+                  CupertinoButton(
+                    color: CupertinoColors.activeBlue,
+                    borderRadius: BorderRadius.circular(8),
+                    onPressed: _isUpdatingAvatar ? null : _generateNewRandomAvatar,
+                    child: const Text('Generate Avatar'),
+                  ),
                   const SizedBox(height: 16),
-
-                  // User Name
                   Text(
                     userName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge,
+                    textAlign: TextAlign.center,
                   ),
-
-                  const SizedBox(height: 4),
-
-                  // User Age
-                  if (userAge > 0)
-                    Text(
-                      '$userAge years old',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: CupertinoColors.secondaryLabel,
-                      ),
-                    ),
-
                   const SizedBox(height: 8),
-
-                  // User Email
                   Text(
                     user.email ?? '',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: CupertinoColors.secondaryLabel,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
                   ),
-
                   const SizedBox(height: 32),
 
                   // Stats Section

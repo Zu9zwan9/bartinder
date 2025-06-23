@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service to fetch and update user profiles
@@ -16,7 +17,11 @@ class UserProfileService {
       if (response != null && response is Map<String, dynamic>) {
         return response;
       }
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching user profile for $userId: $e');
+      }
+    }
     return null;
   }
 
@@ -24,12 +29,26 @@ class UserProfileService {
   /// Returns true on success, false otherwise
   static Future<bool> updateAvatarUrl(String userId, String avatarUrl) async {
     try {
+      if (kDebugMode) {
+        print('Updating avatar URL for user $userId: $avatarUrl');
+      }
+
       final result = await _supabase
           .from('users')
           .update({'avatar_url': avatarUrl})
           .eq('id', userId);
-      return (result != null);
-    } catch (_) {
+
+      if (kDebugMode) {
+        print('Update result: $result');
+      }
+
+      // Supabase update returns an empty list on success, not null
+      // Check if the operation completed without throwing an exception
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating avatar URL for user $userId: $e');
+      }
       return false;
     }
   }
