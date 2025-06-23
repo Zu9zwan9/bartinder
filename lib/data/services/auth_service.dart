@@ -96,6 +96,10 @@ class AuthService {
       );
 
       if (response.user != null) {
+        // Persist avatar_url in users table
+        await _supabase.from('users').update({
+          'avatar_url': avatarUrl,
+        }).eq('id', user.id);
         if (kDebugMode) {
           print('Avatar updated successfully: $avatarUrl');
         }
@@ -155,6 +159,7 @@ class AuthService {
           'email': response.user!.email,
           'name': enrichedMetadata['name'] ?? response.user!.email?.split('@').first,
           'password_hash': '',
+          'avatar_url': avatarUrl,
         });
         return AuthResult.success(response.user!);
       } else {
@@ -208,6 +213,7 @@ class AuthService {
           'email': response.user!.email,
           'name': (response.user!.userMetadata?['name'] as String?) ?? response.user!.email!.split('@').first,
           'password_hash': '',
+          'avatar_url': response.user!.userMetadata?['avatar_url'] as String? ?? '',
         });
         return AuthResult.success(response.user!);
       } else {
