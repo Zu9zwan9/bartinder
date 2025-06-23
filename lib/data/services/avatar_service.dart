@@ -6,7 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'storage_service.dart';
 import 'user_profile_service.dart';
 
-/// Production-ready avatar service following Apple HIG and security best practices
+
 class AvatarService {
   static final SupabaseClient _supabase = Supabase.instance.client;
 
