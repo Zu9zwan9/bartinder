@@ -3,7 +3,6 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../../data/repositories/bar_repository_impl.dart';
 import '../../../data/services/geolocation_service.dart';
-import '../../../domain/entities/bar.dart';
 import '../../../domain/usecases/check_in_bar_usecase.dart';
 import '../../../domain/usecases/dislike_bar_usecase.dart';
 import '../../../domain/usecases/get_bar_by_id_usecase.dart';

@@ -1,15 +1,15 @@
-// TODO Implement this library.
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../domain/repositories/user_repository.dart';
-import '../../data/repositories/user_repository_impl.dart';
-import '../../core/services/location_service.dart';
-import '../../data/repositories/location_repository.dart';
+import '../blocs/auth/auth_bloc.dart';
+import '../blocs/auth/auth_event.dart';
+import '../blocs/auth/auth_state.dart';
+import '../../data/services/auth_service.dart';
+import '../../data/services/storage_service.dart';
 
-/// Profile screen showing user statistics
+/// Production-ready profile screen following Apple HIG guidelines
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -21,15 +21,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _likedUsers = 0;
   int _likedBars = 0;
   int _matches = 0;
-  late final UserRepository _userRepo;
-  final _locationRepo = LocationRepository();
-  final String _userId = 'user_test1'; // Замените на реальный userId при необходимости
-  final _userRepoImpl = UserRepositoryImpl();
+  bool _isUpdatingAvatar = false;
 
   @override
   void initState() {
     super.initState();
-    _userRepo = UserRepositoryImpl();
     _loadStats();
   }
 
@@ -37,12 +33,153 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     final likedUsers = prefs.getStringList('liked_users') ?? [];
     final likedBars = prefs.getStringList('liked_bars') ?? [];
-    final matchIds = await _userRepo.getMatches();
+    final matches = prefs.getStringList('matches') ?? [];
+
     setState(() {
       _likedUsers = likedUsers.length;
       _likedBars = likedBars.length;
-      _matches = matchIds.length;
+      _matches = matches.length;
     });
+  }
+
+  void _signOut() {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Sign Out'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.read<AuthBloc>().add(const AuthSignOutRequested());
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _clearData() {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Clear Data'),
+        content: const Text('This will clear all your liked bars, users, and matches. This action cannot be undone.'),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text('Clear'),
+            onPressed: () async {
+              Navigator.of(context).pop();
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('liked_users');
+              await prefs.remove('disliked_users');
+              await prefs.remove('liked_bars');
+              await prefs.remove('disliked_bars');
+              await prefs.remove('matches');
+              await prefs.remove('last_checkin');
+              await _loadStats();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _changeAvatar() {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Change Avatar'),
+        content: const Text('Generate a new random avatar?'),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          CupertinoDialogAction(
+            child: const Text('Generate'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _generateNewRandomAvatar();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _generateNewRandomAvatar() async {
+    setState(() {
+      _isUpdatingAvatar = true;
+    });
+
+    try {
+      final result = await AuthService.updateAvatar(AuthService.generateRandomAvatar());
+      if (result.isSuccess) {
+        context.read<AuthBloc>().add(const AuthStatusRequested());
+        if (mounted) {
+          _showSuccessMessage('Avatar updated successfully!');
+        }
+      } else {
+        if (mounted) {
+          _showErrorMessage(result.error?.message ?? 'Failed to update avatar');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorMessage('An error occurred while updating avatar');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingAvatar = false;
+        });
+      }
+    }
+  }
+
+  void _showSuccessMessage(String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Success'),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('OK'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorMessage(String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('OK'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -50,293 +187,277 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return CupertinoPageScaffold(
       navigationBar: const CupertinoNavigationBar(
         middle: Text('Profile'),
+        border: null,
       ),
       child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage(
-                'https://randomuser.me/api/portraits/lego/1.jpg',
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is! AuthAuthenticated) {
+              return const Center(
+                child: CupertinoActivityIndicator(),
+              );
+            }
+
+            final user = state.user;
+            final userName = user.userMetadata?['name'] as String? ?? 'User';
+            final userAge = user.userMetadata?['age'] as int? ?? 0;
+            final avatarUrl = user.userMetadata?['avatar_url'] as String?;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+
+                  // Profile Avatar
+                  GestureDetector(
+                    onTap: _isUpdatingAvatar ? null : _changeAvatar,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: CupertinoColors.systemGrey5.resolveFrom(context),
+                            border: Border.all(
+                              color: _isUpdatingAvatar
+                                  ? CupertinoColors.activeBlue
+                                  : CupertinoColors.systemGrey4.resolveFrom(context),
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(60),
+                            child: _isUpdatingAvatar
+                                ? const Center(
+                                    child: CupertinoActivityIndicator(),
+                                  )
+                                : avatarUrl != null
+                                    ? Image.network(
+                                        avatarUrl,
+                                        width: 120,
+                                        height: 120,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return const Icon(
+                                            CupertinoIcons.person_fill,
+                                            size: 60,
+                                            color: CupertinoColors.systemGrey,
+                                          );
+                                        },
+                                      )
+                                    : const Icon(
+                                        CupertinoIcons.person_fill,
+                                        size: 60,
+                                        color: CupertinoColors.systemGrey,
+                                      ),
+                          ),
+                        ),
+                        if (!_isUpdatingAvatar)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: CupertinoColors.activeBlue,
+                                border: Border.all(
+                                  color: CupertinoColors.systemBackground.resolveFrom(context),
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                CupertinoIcons.camera_fill,
+                                color: CupertinoColors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Avatar change hint
+                  if (!_isUpdatingAvatar)
+                    Text(
+                      'Tap to change avatar',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: CupertinoColors.secondaryLabel.resolveFrom(context),
+                      ),
+                    ),
+
+                  const SizedBox(height: 16),
+
+                  // User Name
+                  Text(
+                    userName,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // User Age
+                  if (userAge > 0)
+                    Text(
+                      '$userAge years old',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: CupertinoColors.secondaryLabel,
+                      ),
+                    ),
+
+                  const SizedBox(height: 8),
+
+                  // User Email
+                  Text(
+                    user.email ?? '',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: CupertinoColors.secondaryLabel,
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Stats Section
+                  CupertinoFormSection.insetGrouped(
+                    header: const Text('STATISTICS'),
+                    children: [
+                      _buildStatRow(
+                        icon: CupertinoIcons.person_2_fill,
+                        label: 'Liked Users',
+                        value: _likedUsers,
+                        color: CupertinoColors.systemPink,
+                      ),
+                      _buildStatRow(
+                        icon: CupertinoIcons.location_fill,
+                        label: 'Liked Bars',
+                        value: _likedBars,
+                        color: CupertinoColors.systemOrange,
+                      ),
+                      _buildStatRow(
+                        icon: CupertinoIcons.heart_fill,
+                        label: 'Matches',
+                        value: _matches,
+                        color: CupertinoColors.systemRed,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Actions Section
+                  CupertinoFormSection.insetGrouped(
+                    header: const Text('ACTIONS'),
+                    children: [
+                      CupertinoFormRow(
+                        prefix: const Icon(
+                          CupertinoIcons.refresh,
+                          color: CupertinoColors.systemBlue,
+                        ),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          alignment: Alignment.centerLeft,
+                          onPressed: _loadStats,
+                          child: const Text(
+                            'Refresh Statistics',
+                            style: TextStyle(
+                              color: CupertinoColors.label,
+                            ),
+                          ),
+                        ),
+                      ),
+                      CupertinoFormRow(
+                        prefix: const Icon(
+                          CupertinoIcons.clear,
+                          color: CupertinoColors.systemOrange,
+                        ),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          alignment: Alignment.centerLeft,
+                          onPressed: _clearData,
+                          child: const Text(
+                            'Clear Data',
+                            style: TextStyle(
+                              color: CupertinoColors.label,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Sign Out Button
+                  CupertinoButton(
+                    color: CupertinoColors.destructiveRed,
+                    borderRadius: BorderRadius.circular(8),
+                    onPressed: _signOut,
+                    child: const Text(
+                      'Sign Out',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // App Version
+                  const Text(
+                    'Beer Tinder v1.0.0',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: CupertinoColors.secondaryLabel,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            const Center(
-              child: Text(
-                'Your Profile',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildStatTile(
-              icon: CupertinoIcons.person_2_fill,
-              label: 'Liked Users',
-              value: _likedUsers,
-            ),
-            _buildStatTile(
-              icon: CupertinoIcons.map_fill,
-              label: 'Liked Bars',
-              value: _likedBars,
-            ),
-            _buildStatTile(
-              icon: CupertinoIcons.heart_fill,
-              label: 'Matches',
-              value: _matches,
-            ),
-            const SizedBox(height: 32),
-            // Refresh stats button
-            CupertinoButton(
-              color: CupertinoColors.activeBlue,
-              onPressed: _loadStats,
-              child: const Text('Refresh Stats'),
-            ),
-            const SizedBox(height: 16),
-            // Clear stored data
-            CupertinoButton(
-              color: CupertinoColors.destructiveRed,
-              child: const Text('Clear Data'),
-              onPressed: () async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.remove('liked_users');
-                await prefs.remove('disliked_users');
-                await prefs.remove('liked_bars');
-                await prefs.remove('disliked_bars');
-                await prefs.remove('last_checkin');
-                setState(() {
-                  _likedUsers = 0;
-                  _likedBars = 0;
-                  _matches = 0;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            // Show location button
-            CupertinoButton.filled(
-              child: const Text('Показать локацию'),
-              onPressed: () async {
-                final service = LocationService();
-                final position = await service.getCurrentLocation();
-                if (!mounted) return;
-                showCupertinoDialog(
-                  context: context,
-                  builder: (ctx) => CupertinoAlertDialog(
-                    title: const Text('Ваша локация'),
-                    content: Text(
-                      position == null
-                          ? 'Не удалось получить локацию'
-                          : 'Широта: \\${position.latitude}\nДолгота: \\${position.longitude}',
-                    ),
-                    actions: [
-                      CupertinoDialogAction(
-                        child: const Text('OK'),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            // Save location to Firebase button
-            CupertinoButton.filled(
-              child: const Text('Сохранить локацию в Firebase'),
-              onPressed: () async {
-                final service = LocationService();
-                final position = await service.getCurrentLocation();
-                if (position == null) {
-                  if (!mounted) return;
-                  showCupertinoDialog(
-                    context: context,
-                    builder: (ctx) => CupertinoAlertDialog(
-                      title: const Text('Ошибка'),
-                      content: const Text('Не удалось получить локацию'),
-                      actions: [
-                        CupertinoDialogAction(
-                          child: const Text('OK'),
-                          onPressed: () => Navigator.of(ctx).pop(),
-                        ),
-                      ],
-                    ),
-                  );
-                  return;
-                }
-                await _locationRepo.saveUserLocation(
-                  userId: _userId,
-                  latitude: position.latitude,
-                  longitude: position.longitude,
-                );
-                if (!mounted) return;
-                showCupertinoDialog(
-                  context: context,
-                  builder: (ctx) => CupertinoAlertDialog(
-                    title: const Text('Успех'),
-                    content: const Text('Локация сохранена в Firebase!'),
-                    actions: [
-                      CupertinoDialogAction(
-                        child: const Text('OK'),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            // Show location from Supabase button
-            CupertinoButton.filled(
-              child: const Text('Показать локацию из Supabase'),
-              onPressed: () async {
-                final response = await _locationRepo.supabase
-                    .from('users')
-                    .select()
-                    .eq('id', _userId)
-                    .single();
-                if (!mounted) return;
-                showCupertinoDialog(
-                  context: context,
-                  builder: (ctx) => CupertinoAlertDialog(
-                    title: const Text('Локация из Supabase'),
-                    content: Text(
-                      (response == null || response['latitude'] == null || response['longitude'] == null)
-                          ? 'Нет данных'
-                          : 'Широта: \\${response['latitude']}\nДолгота: \\${response['longitude']}',
-                    ),
-                    actions: [
-                      CupertinoDialogAction(
-                        child: const Text('OK'),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            // Create test users in DB button
-            CupertinoButton.filled(
-              child: const Text('Create test users in DB'),
-              onPressed: () async {
-                await _userRepoImpl.createTestUsers();
-                if (!mounted) return;
-                showCupertinoDialog(
-                  context: context,
-                  builder: (ctx) => CupertinoAlertDialog(
-                    title: const Text('Success'),
-                    content: const Text('Test users created in Supabase!'),
-                    actions: [
-                      CupertinoDialogAction(
-                        child: const Text('OK'),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            // Get all users from DB button
-            CupertinoButton.filled(
-              child: const Text('Get all users from DB'),
-              onPressed: () async {
-                final users = await _userRepoImpl.getAllUsersRaw();
-                if (!mounted) return;
-                showCupertinoDialog(
-                  context: context,
-                  builder: (ctx) => CupertinoAlertDialog(
-                    title: const Text('Users from Supabase'),
-                    content: Text(users.isEmpty
-                        ? 'No users found.'
-                        : users.map((u) => u.name).join('\n')),
-                    actions: [
-                      CupertinoDialogAction(
-                        child: const Text('OK'),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            // Create test data button
-            CupertinoButton(
-              color: CupertinoColors.systemGreen,
-              child: const Text('Создать тестовые данные'),
-              onPressed: () async {
-                // Пример тестовых данных
-                final testUser = {
-                  'id': 'test_user_1',
-                  'name': 'Test User',
-                  'age': 25,
-                  'photoUrl': 'https://randomuser.me/api/portraits/lego/2.jpg',
-                  'favoriteBeer': 'IPA',
-                  'bio': 'Это тестовый пользователь',
-                  'beerPreferences': ['IPA', 'Stout'],
-                  'lastCheckedInLocation': 'Test Bar',
-                  'lastCheckedInDistance': 1.2,
-                };
-                try {
-                  final supabase = Supabase.instance.client;
-                  await supabase.from('users').upsert([testUser]);
-                  if (!mounted) return;
-                  showCupertinoDialog(
-                    context: context,
-                    builder: (ctx) => CupertinoAlertDialog(
-                      title: const Text('Успех'),
-                      content: const Text('Тестовые данные созданы!'),
-                      actions: <Widget>[
-                        CupertinoDialogAction(
-                          child: const Text('OK'),
-                          onPressed: () => Navigator.of(ctx).pop(),
-                        ),
-                      ],
-                    ),
-                  );
-                } catch (e) {
-                  if (!mounted) return;
-                  showCupertinoDialog(
-                    context: context,
-                    builder: (ctx) => CupertinoAlertDialog(
-                      title: const Text('Ошибка'),
-                      content: Text('Не удалось создать тестовые данные: \n${e.toString()}'),
-                      actions: <Widget>[
-                        CupertinoDialogAction(
-                          child: const Text('OK'),
-                          onPressed: () => Navigator.of(ctx).pop(),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildStatTile({
+  Widget _buildStatRow({
     required IconData icon,
     required String label,
     required int value,
+    required Color color,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return CupertinoFormRow(
+      prefix: Icon(
+        icon,
+        color: color,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 28, color: CupertinoColors.activeBlue),
-              const SizedBox(width: 8),
-              Text(label, style: const TextStyle(fontSize: 16)),
-            ],
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+            ),
           ),
           Text(
             '$value',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: CupertinoColors.secondaryLabel,
+            ),
           ),
         ],
       ),

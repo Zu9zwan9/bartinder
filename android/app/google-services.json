@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "168022717872",
+    "project_id": "wells-d95e4",
+    "storage_bucket": "wells-d95e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168022717872:android:c904d4aef48fc7b7a3d275",
+        "android_client_info": {
+          "package_name": "com.example.beertinder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSdlBZTQxDOHYotOdqH348oqwG2lHdcGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168022717872:android:fa56eca160c1ea5aa3d275",
+        "android_client_info": {
+          "package_name": "com.example.road_wise"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSdlBZTQxDOHYotOdqH348oqwG2lHdcGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

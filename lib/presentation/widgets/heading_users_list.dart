@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/repositories/user_repository_impl.dart';
 import '../../domain/entities/user.dart' as app_user;

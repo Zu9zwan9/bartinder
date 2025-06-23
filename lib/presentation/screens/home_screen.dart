@@ -1,9 +1,10 @@
+import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 
-import '../../data/repositories/user_repository_impl.dart';
+import '../../data/repositories/supabase_user_repository_impl.dart';
 import '../../domain/entities/user.dart';
 import '../blocs/user_swipe/user_swipe_bloc.dart';
 import '../blocs/user_swipe/user_swipe_event.dart';
@@ -26,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _userSwipeBloc = UserSwipeBloc(userRepository: UserRepositoryImpl())
+    _userSwipeBloc = UserSwipeBloc(userRepository: SupabaseUserRepositoryImpl())
       ..add(const LoadUsers());
   }
 
@@ -93,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
                 return true;
               },
-              numberOfCardsDisplayed: 3,
+              numberOfCardsDisplayed: math.min(3, users.length),
               backCardOffset: const Offset(20, 20),
               padding: const EdgeInsets.all(24),
               cardBuilder: (BuildContext context, int index, int horizontalOffset, int verticalOffset) {

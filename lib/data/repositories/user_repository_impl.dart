@@ -17,12 +17,8 @@ class UserRepositoryImpl implements UserRepository {
     final supabase = Supabase.instance.client;
     final response = await supabase.from('users').select().limit(100);
     List data = [];
-    if (response is List) {
-      data = response;
-    } else if (response != null) {
-      data = [response];
-    }
-    if (data.isNotEmpty) {
+    data = response;
+      if (data.isNotEmpty) {
       final users = data.map((item) => app_user.User(
         id: item['id']?.toString() ?? '',
         name: item['name'] ?? '',
@@ -134,7 +130,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<app_user.User>> getAllUsersRaw() async {
     final supabase = Supabase.instance.client;
     final response = await supabase.from('users').select();
-    if (response is List && response.isNotEmpty) {
+    if (response.isNotEmpty) {
       return response.map((item) => app_user.User(
         id: item['id']?.toString() ?? '',
         name: item['name'] ?? '',
