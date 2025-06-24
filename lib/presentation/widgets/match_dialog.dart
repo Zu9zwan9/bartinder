@@ -61,29 +61,23 @@ class MatchDialog extends StatelessWidget {
             const SizedBox(height: 16),
 
             // User photo
-            CircleAvatar(
-              radius: 60,
-              backgroundImage: NetworkImage(matchedUser.photoUrl),
-              backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-              child: ClipOval(
-                child: Image.network(
-                  matchedUser.photoUrl,
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
-                      child: const Icon(
+            // Avatar with fallback if no photo URL provided
+            Builder(builder: (context) {
+              final url = matchedUser.photoUrl;
+              final hasPhoto = url.isNotEmpty;
+              return CircleAvatar(
+                radius: 60,
+                backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+                backgroundImage: hasPhoto ? NetworkImage(url) : null,
+                child: hasPhoto
+                    ? null
+                    : Icon(
                         CupertinoIcons.person_fill,
                         size: 60,
                         color: AppTheme.primaryColor,
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
+              );
+            }),
             const SizedBox(height: 16),
 
             // User name and info

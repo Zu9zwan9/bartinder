@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.of(ctx).pop();
           ScaffoldMessenger.of(ctx).showSnackBar(
             const SnackBar(content: Text('Messaging feature coming soon!')),
-          );
+            );
         },
       ),
     );

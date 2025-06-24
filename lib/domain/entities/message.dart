@@ -81,5 +81,21 @@ class Message extends Equatable {
       };
 
   @override
-  List<Object?> get props => [id, matchId, senderId, receiverId, text, mediaUrl, topic, extension, event, content, payload, createdAt, updatedAt, insertedAt, sentAt];
+  List<Object?> get props => [
+        id,
+        matchId,
+        senderId,
+        receiverId,
+        text,
+        mediaUrl,
+        topic,
+        extension,
+        event,
+        content,
+        payload,
+        createdAt,
+        updatedAt,
+        insertedAt,
+        sentAt,
+      ];
 }

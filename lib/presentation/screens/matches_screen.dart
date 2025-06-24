@@ -104,10 +104,22 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(user.photoUrl),
-                            radius: 24,
-                          ),
+                          Builder(builder: (context) {
+                            final url = user.photoUrl;
+                            final hasPhoto = url.isNotEmpty;
+                            return CircleAvatar(
+                              radius: 24,
+                              backgroundColor: CupertinoColors.systemGrey4,
+                              backgroundImage: hasPhoto ? NetworkImage(url) : null,
+                              child: hasPhoto
+                                  ? null
+                                  : Icon(
+                                CupertinoIcons.person_fill,
+                                size: 24,
+                                color: CupertinoColors.systemGrey,
+                              ),
+                            );
+                          }),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(

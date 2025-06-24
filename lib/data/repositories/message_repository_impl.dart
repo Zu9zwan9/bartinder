@@ -19,7 +19,7 @@ class SupabaseMessageRepositoryImpl implements MessageRepository {
         .eq('match_id', matchId)
         .order('created_at', ascending: true)
         .map((records) => records
-            .map((e) => Message.fromJson(e as Map<String, dynamic>))
+            .map((e) => Message.fromJson(e))
             .toList());
   }
 

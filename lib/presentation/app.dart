@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/auth/auth_state.dart';
@@ -19,6 +20,14 @@ class BeerTinderApp extends StatelessWidget {
     return CupertinoApp.router(
       title: 'Beer Tinder',
       theme: AppTheme.cupertinoTheme,
+      localizationsDelegates: [
+        GlobalWidgetsLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('en', 'US'),
+      ],
       routerConfig: _createRouter(context),
       debugShowCheckedModeBanner: false,
     );
