@@ -317,19 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               )
                             : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                                ? SvgPicture.network(
-                                    _avatarUrl!,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    fit: BoxFit.cover,
-                                    placeholderBuilder: (_) => Center(
-                                      child: CupertinoActivityIndicator(
-                                        color: AppTheme.isDarkMode(context)
-                                            ? AppTheme.primaryColor
-                                            : AppTheme.primaryDarkColor,
-                                      ),
-                                    ),
-                                  )
+                                ? _buildAvatar(_avatarUrl!)
                                 : Icon(
                                     CupertinoIcons.person_fill,
                                     size: 50,
@@ -578,5 +566,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return AppTheme.isDarkMode(context)
         ? const Color(0xFFFF9F0A) // System Orange Dark
         : const Color(0xFFFF9500); // System Orange Light
+  }
+
+  Widget _buildAvatar(String url) {
+    return SvgPicture.network(
+      url,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      placeholderBuilder: (_) => Center(
+        child: CupertinoActivityIndicator(
+          color: AppTheme.isDarkMode(context)
+              ? AppTheme.primaryColor
+              : AppTheme.primaryDarkColor,
+        ),
+      ),
+      errorBuilder: (context, error, stackTrace) {
+        return Center(
+          child: Icon(
+            CupertinoIcons.person_fill,
+            size: 50,
+            color: AppTheme.iconColor(context),
+          ),
+        );
+      },
+    );
   }
 }

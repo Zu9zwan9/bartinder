@@ -9,6 +9,7 @@ import '../../domain/entities/user.dart';
 import '../blocs/user_swipe/user_swipe_bloc.dart';
 import '../blocs/user_swipe/user_swipe_event.dart';
 import '../blocs/user_swipe/user_swipe_state.dart';
+import '../theme/theme.dart';
 import '../widgets/match_dialog.dart';
 import '../widgets/user_card.dart';
 
@@ -56,9 +57,8 @@ class _HomeScreenState extends State<HomeScreen> {
           border: null, // Remove the border to reduce space
         ),
         child: SafeArea(
-          // Set top to false to minimize the gap at the top
-          top: false,
-          bottom: true,
+          top: false, // Set top to false to minimize the gap at the top
+          bottom: false, // Set bottom to false for manual layout control
           child: BlocConsumer<UserSwipeBloc, UserSwipeState>(
             listener: (context, state) {
               if (state is UserSwipeMatch) {
@@ -92,79 +92,113 @@ class _HomeScreenState extends State<HomeScreen> {
     final hasUsers = users.isNotEmpty;
     final count = hasUsers ? users.length : 1;
 
-    // Get the available height to better calculate proportions
-    final screenHeight = MediaQuery.of(context).size.height;
+    // Get accurate measurements for layout
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
+    final screenWidth = mediaQuery.size.width;
     final navBarHeight = CupertinoNavigationBar().preferredSize.height;
-    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+    final bottomPadding = mediaQuery.padding.bottom;
+    final statusBarHeight = mediaQuery.padding.top;
 
-    return Column(
+    // Set a fixed height for action area that ensures buttons are visible
+    const actionAreaHeight = 100.0;
+
+    // Calculate card area height with more conservative values to ensure buttons are visible
+    final availableHeight = screenHeight - navBarHeight - statusBarHeight - bottomPadding;
+    final cardAreaHeight = availableHeight * 0.75; // Reduced by 30% from original 0.8 (0.8 * 0.7 = 0.56)
+
+    return Stack(
       children: [
-        // Card swiper section - reduced to 70% of available height
-        SizedBox(
-          height: (screenHeight - navBarHeight) * 0.70, // Reduced to 70% to give more room for buttons
-          child: Padding(
-            padding: const EdgeInsets.only(top: 0, left: 16, right: 16, bottom: 0),
-            child: CardSwiper(
-              key: ValueKey(count),
-              controller: _cardController,
-              cardsCount: count,
-              onSwipe: hasUsers
-                  ? (prev, curr, direction) {
-                      final user = users[prev];
-                      _userSwipeBloc.add(
-                        direction == CardSwiperDirection.right
-                            ? LikeUser(user)
-                            : DislikeUser(user),
-                      );
-                      return true;
+        Column(
+          children: [
+            // Card swiper section with calculated height
+            SizedBox(
+              height: cardAreaHeight,
+              width: screenWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: CardSwiper(
+                  key: ValueKey(count),
+                  controller: _cardController,
+                  cardsCount: count,
+                  onSwipe: hasUsers
+                      ? (prev, curr, direction) {
+                    final user = users[prev];
+                    _userSwipeBloc.add(
+                      direction == CardSwiperDirection.right
+                          ? LikeUser(user)
+                          : DislikeUser(user),
+                    );
+                    return true;
+                  }
+                      : (index, secondIndex, direction) => false,
+                  numberOfCardsDisplayed: math.min(3, count),
+                  backCardOffset: const Offset(20, 20),
+                  padding: const EdgeInsets.all(16),
+                  cardBuilder: (context, index, horizontalOffset, verticalOffset) {
+                    if (!hasUsers) {
+                      return _buildNoMoreCard();
                     }
-                  : (index, secondIndex, direction) => false,
-              numberOfCardsDisplayed: math.min(3, count),
-              backCardOffset: const Offset(20, 20),
-              padding: const EdgeInsets.all(16),
-              cardBuilder: (context, index, horizontalOffset, verticalOffset) {
-                if (!hasUsers) {
-                  return _buildNoMoreCard();
-                }
-                return UserCard(user: users[index]);
-              },
+                    return UserCard(user: users[index]);
+                  },
+                ),
+              ),
             ),
-          ),
+
+            // Space for action buttons
+            SizedBox(height: actionAreaHeight),
+
+            // Fill remaining space
+            const Spacer(),
+          ],
         ),
 
-        // Spacer to push buttons to bottom
-        const Spacer(),
+        // Action area positioned below the cards
+        Positioned(
+          bottom: bottomPadding + 45, // Position higher with more padding from bottom
+          left: 0,
+          right: 0,
+          child: Container(
+            height: actionAreaHeight,
+            width: screenWidth,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Dislike button (left)
+                Expanded(
+                  child: _buildActionButton(
+                    icon: CupertinoIcons.xmark_circle_fill,
+                    color: Theme.of(context).colorScheme.error,
+                    onTap: () {
+                      if (hasUsers) {
+                        _cardController.swipe(CardSwiperDirection.left);
+                      } else {
+                        _userSwipeBloc.add(const LoadUsers());
+                      }
+                    },
+                  ),
+                ),
 
-        // Bottom buttons container with more space
-        Container(
-          height: 170 + bottomSafeArea, // Significantly increased height to ensure buttons are fully visible
-          padding: const EdgeInsets.only(bottom: 32, left: 16, right: 16, top: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildActionButton(
-                icon: CupertinoIcons.xmark_circle_fill,
-                color: Theme.of(context).colorScheme.error,
-                onTap: () {
-                  if (hasUsers) {
-                    _cardController.swipe(CardSwiperDirection.left);
-                  } else {
-                    _userSwipeBloc.add(const LoadUsers());
-                  }
-                },
-              ),
-              _buildActionButton(
-                icon: CupertinoIcons.heart_fill,
-                color: Colors.green,
-                onTap: () {
-                  if (hasUsers) {
-                    _cardController.swipe(CardSwiperDirection.right);
-                  } else {
-                    _userSwipeBloc.add(const LoadUsers());
-                  }
-                },
-              ),
-            ],
+                const SizedBox(width: 32), // Consistent space between buttons
+
+                // Like button (right)
+                Expanded(
+                  child: _buildActionButton(
+                    icon: CupertinoIcons.heart_fill,
+                    color: Colors.green,
+                    onTap: () {
+                      if (hasUsers) {
+                        _cardController.swipe(CardSwiperDirection.right);
+                      } else {
+                        _userSwipeBloc.add(const LoadUsers());
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],

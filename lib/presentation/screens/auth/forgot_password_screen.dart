@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../theme/theme.dart';
 
-/// Forgot password screen following Apple HIG guidelines
+/// Forgot password screen following Apple HIG guidelines with dark mode support
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -49,12 +51,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: AppTheme.backgroundColor(context),
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Reset Password'),
+        middle: Text(
+          'Reset Password',
+          style: AppTheme.navTitle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        backgroundColor: AppTheme.isDarkMode(context)
+            ? AppTheme.darkCardColor
+            : Colors.white,
+        border: null,
         leading: CupertinoNavigationBarBackButton(
+          color: AppTheme.systemBlue(context),
           onPressed: () => context.go('/auth/signin'),
         ),
-        border: null,
       ),
       child: SafeArea(
         child: BlocListener<AuthBloc, AuthState>(
@@ -74,19 +86,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const SizedBox(height: 40),
 
                   // Icon
-                  const Icon(
+                  Icon(
                     CupertinoIcons.lock_rotation,
                     size: 80,
-                    color: CupertinoColors.systemBlue,
+                    color: AppTheme.systemBlue(context),
                   ),
 
                   const SizedBox(height: 24),
 
                   // Header
-                  const Text(
+                  Text(
                     'Reset Your Password',
-                    style: TextStyle(
-                      fontSize: 28,
+                    style: AppTheme.title1.copyWith(
+                      color: AppTheme.textColor(context),
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -95,11 +107,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const SizedBox(height: 16),
 
                   // Description
-                  const Text(
+                  Text(
                     'Enter your email address and we\'ll send you instructions to reset your password.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: CupertinoColors.secondaryLabel,
+                    style: AppTheme.subhead.copyWith(
+                      color: AppTheme.secondaryTextColor(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -107,37 +118,55 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const SizedBox(height: 40),
 
                   // Email Field
-                  CupertinoFormSection.insetGrouped(
-                    children: [
-                      CupertinoFormRow(
-                        prefix: const Icon(
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor(context),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(
                           CupertinoIcons.mail,
-                          color: CupertinoColors.secondaryLabel,
+                          color: AppTheme.secondaryTextColor(context),
                         ),
-                        child: CupertinoTextFormFieldRow(
-                          controller: _emailController,
-                          focusNode: _emailFocusNode,
-                          placeholder: 'Email',
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.done,
-                          autocorrect: false,
-                          validator: _validateEmail,
-                          onFieldSubmitted: (_) => _resetPassword(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: CupertinoTextField(
+                            controller: _emailController,
+                            focusNode: _emailFocusNode,
+                            placeholder: 'Email',
+                            placeholderStyle: AppTheme.body.copyWith(
+                              color: AppTheme.secondaryTextColor(context),
+                            ),
+                            style: AppTheme.body.copyWith(
+                              color: AppTheme.textColor(context),
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.done,
+                            autocorrect: false,
+                            decoration: BoxDecoration(
+                              color: AppTheme.cardColor(context),
+                            ),
+                            padding: EdgeInsets.zero,
+                            onSubmitted: (_) => _resetPassword(),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 24),
 
                   // Reset Password Button
-                  CupertinoButton.filled(
+                  CupertinoButton(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(8),
                     onPressed: _resetPassword,
-                    child: const Text(
+                    child: Text(
                       'Send Reset Instructions',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
+                      style: AppTheme.button.copyWith(
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -148,10 +177,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: CupertinoColors.systemGrey6.resolveFrom(context),
+                      color: AppTheme.isDarkMode(context)
+                          ? AppTheme.darkSurfaceColor
+                          : AppTheme.systemGray6(context),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -159,25 +190,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             Icon(
                               CupertinoIcons.info_circle,
                               size: 16,
-                              color: CupertinoColors.secondaryLabel,
+                              color: AppTheme.secondaryTextColor(context),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Text(
                               'What happens next?',
-                              style: TextStyle(
-                                fontSize: 14,
+                              style: AppTheme.footnote.copyWith(
+                                color: AppTheme.secondaryTextColor(context),
                                 fontWeight: FontWeight.w600,
-                                color: CupertinoColors.secondaryLabel,
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           '1. Check your email inbox\n2. Click the reset link in the email\n3. Create a new password\n4. Sign in with your new password',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: CupertinoColors.secondaryLabel,
+                          style: AppTheme.caption1.copyWith(
+                            color: AppTheme.secondaryTextColor(context),
                           ),
                         ),
                       ],
@@ -190,17 +219,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   CupertinoButton(
                     onPressed: () => context.go('/auth/signin'),
                     child: RichText(
-                      text: const TextSpan(
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: CupertinoColors.label,
+                      text: TextSpan(
+                        style: AppTheme.body.copyWith(
+                          color: AppTheme.textColor(context),
                         ),
                         children: [
-                          TextSpan(text: 'Remember your password? '),
+                          const TextSpan(text: 'Remember your password? '),
                           TextSpan(
                             text: 'Sign In',
-                            style: TextStyle(
-                              color: CupertinoColors.activeBlue,
+                            style: AppTheme.body.copyWith(
+                              color: AppTheme.systemBlue(context),
                               fontWeight: FontWeight.w600,
                             ),
                           ),

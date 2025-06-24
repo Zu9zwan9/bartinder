@@ -117,113 +117,130 @@ class _BarsScreenState extends State<BarsScreen> {
   }
 
   Widget _buildBarsList(BuildContext context, List<Bar> bars) {
-    // Calculate screen dimensions and safe areas
-    final screenWidth = MediaQuery.of(context).size.width;
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    // Calculate safe layout dimensions
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
+    final screenWidth = mediaQuery.size.width;
+    final navBarHeight = CupertinoNavigationBar().preferredSize.height;
+    final bottomPadding = mediaQuery.padding.bottom;
+    final statusBarHeight = mediaQuery.padding.top;
 
-    // Fixed height for bottom action area
-    const actionAreaHeight = 200.0;
+    // Fixed height for action area - matches HomeScreen
+    const actionAreaHeight = 100.0;
 
     // Calculate the space needed for the heading users section
     final bool hasHeadingUsers = bars.isNotEmpty && bars[0].usersHeadingThere.isNotEmpty;
-    final headingUsersHeight = hasHeadingUsers ? 100.0 : 0.0;
+    final headingUsersHeight = hasHeadingUsers ? 80.0 : 0.0;
 
-    return Column(
+    // Calculate card area height with more conservative values
+    final availableHeight = screenHeight - navBarHeight - statusBarHeight - bottomPadding;
+    final cardAreaHeight = (availableHeight * 0.8) - headingUsersHeight; // 80% of available height minus heading
+
+    return Stack(
       children: [
-        // Card swiper section with flexible height using Expanded
-        Expanded(
-          child: SizedBox(
+        Column(
+          children: [
+            // Card swiper section with calculated height
+            SizedBox(
+              height: cardAreaHeight,
+              width: screenWidth,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: CardSwiper(
+                  controller: _cardController,
+                  cardsCount: bars.length,
+                  onSwipe: (prev, curr, dir) {
+                    final bar = bars[prev];
+                    _barsBloc.add(
+                      dir == CardSwiperDirection.right
+                          ? LikeBar(bar.id)
+                          : DislikeBar(bar.id),
+                    );
+                    return true;
+                  },
+                  numberOfCardsDisplayed: 3,
+                  backCardOffset: const Offset(20, 20),
+                  padding: const EdgeInsets.all(16),
+                  cardBuilder: (context, index, horizontalOffset, verticalOffset) {
+                    return BarCard(
+                      bar: bars[index],
+                      onTap: () => _barsBloc.add(ViewBarDetails(bars[index].id)),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            // Heading users section if applicable
+            if (hasHeadingUsers)
+              SizedBox(
+                height: headingUsersHeight,
+                width: screenWidth,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'People heading to ${bars[0].name}:',
+                        style: AppTheme.subtitleStyle.copyWith(
+                          color: AppTheme.textColor(context),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      SizedBox(
+                        height: 54, // Reduced height to fit properly
+                        child: HeadingUsersList(userIds: bars[0].usersHeadingThere),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Spacer to push content up
+            const Spacer(),
+          ],
+        ),
+
+        // Action buttons section positioned at bottom of screen
+        Positioned(
+          bottom: bottomPadding + 45, // Moved buttons 20 pixels up
+          left: 0,
+          right: 0,
+          child: Container(
+            height: actionAreaHeight,
             width: screenWidth,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4, left: 16, right: 16, bottom: 0),
-              child: CardSwiper(
-                controller: _cardController,
-                cardsCount: bars.length,
-                onSwipe: (prev, curr, dir) {
-                  final bar = bars[prev];
-                  _barsBloc.add(
-                    dir == CardSwiperDirection.right
-                        ? LikeBar(bar.id)
-                        : DislikeBar(bar.id),
-                  );
-                  return true;
-                },
-                numberOfCardsDisplayed: 3,
-                backCardOffset: const Offset(20, 20),
-                padding: const EdgeInsets.all(16),
-                cardBuilder: (context, index, horizontalOffset, verticalOffset) {
-                  return BarCard(
-                    bar: bars[index],
-                    onTap: () => _barsBloc.add(ViewBarDetails(bars[index].id)),
-                  );
-                },
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Dislike button
+                Expanded(
+                  child: _buildActionButton(
+                    icon: CupertinoIcons.xmark_circle_fill,
+                    color: AppTheme.errorColor(context),
+                    onTap: () => _cardController.swipe(CardSwiperDirection.left),
+                  ),
+                ),
+
+                const SizedBox(width: 32), // Same space as HomeScreen for consistency
+
+                // Like button
+                Expanded(
+                  child: _buildActionButton(
+                    icon: CupertinoIcons.heart_fill,
+                    color: AppTheme.successColor(context),
+                    onTap: () => _cardController.swipe(CardSwiperDirection.right),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-
-        // Heading users section if applicable
-        if (hasHeadingUsers)
-          SizedBox(
-            height: headingUsersHeight,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'People heading to ${bars[0].name}:',
-                    style: AppTheme.subtitleStyle.copyWith(
-                      color: AppTheme.textColor(context),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 70,
-                    child: HeadingUsersList(userIds: bars[0].usersHeadingThere),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-        // Action buttons section with fixed height
-        Container(
-          height: actionAreaHeight,
-          width: screenWidth,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Dislike button
-              Expanded(
-                child: _buildActionButton(
-                  icon: CupertinoIcons.xmark_circle_fill,
-                  color: AppTheme.errorColor(context),
-                  onTap: () => _cardController.swipe(CardSwiperDirection.left),
-                ),
-              ),
-
-              const SizedBox(width: 20), // Space between buttons
-
-              // Like button
-              Expanded(
-                child: _buildActionButton(
-                  icon: CupertinoIcons.heart_fill,
-                  color: AppTheme.successColor(context),
-                  onTap: () => _cardController.swipe(CardSwiperDirection.right),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Bottom spacer for system padding
-        SizedBox(height: bottomPadding),
       ],
     );
   }

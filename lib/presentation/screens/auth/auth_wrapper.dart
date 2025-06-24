@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../theme/theme.dart';
+
 
 /// Wrapper that handles authentication state and navigation
 class AuthWrapper extends StatelessWidget {
@@ -60,13 +63,29 @@ class AuthWrapper extends StatelessWidget {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Verify Your Email'),
+        title: Text(
+          'Verify Your Email',
+          style: AppTheme.headline.copyWith(
+            color: AppTheme.textColor(context),
+            decoration: TextDecoration.none,
+          ),
+        ),
         content: Text(
           'We\'ve sent a verification email to $email. Please check your inbox and click the verification link to complete your registration.',
+          style: AppTheme.body.copyWith(
+            color: AppTheme.textColor(context),
+            decoration: TextDecoration.none,
+          ),
         ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.button.copyWith(
+                color: AppTheme.systemBlue(context),
+                decoration: TextDecoration.none,
+              ),
+            ),
             onPressed: () {
               Navigator.of(context).pop();
               context.go('/auth/signin');
@@ -81,13 +100,29 @@ class AuthWrapper extends StatelessWidget {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Password Reset Sent'),
+        title: Text(
+          'Password Reset Sent',
+          style: AppTheme.headline.copyWith(
+            color: AppTheme.textColor(context),
+            decoration: TextDecoration.none,
+          ),
+        ),
         content: Text(
           'We\'ve sent password reset instructions to $email. Please check your inbox and follow the instructions to reset your password.',
+          style: AppTheme.body.copyWith(
+            color: AppTheme.textColor(context),
+            decoration: TextDecoration.none,
+          ),
         ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.button.copyWith(
+                color: AppTheme.systemBlue(context),
+                decoration: TextDecoration.none,
+              ),
+            ),
             onPressed: () {
               Navigator.of(context).pop();
               context.go('/auth/signin');
@@ -102,11 +137,29 @@ class AuthWrapper extends StatelessWidget {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Error'),
-        content: Text(error),
+        title: Text(
+          'Error',
+          style: AppTheme.headline.copyWith(
+            color: AppTheme.textColor(context),
+            decoration: TextDecoration.none,
+          ),
+        ),
+        content: Text(
+          error,
+          style: AppTheme.body.copyWith(
+            color: AppTheme.textColor(context),
+            decoration: TextDecoration.none,
+          ),
+        ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.button.copyWith(
+                color: AppTheme.systemBlue(context),
+                decoration: TextDecoration.none,
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -121,20 +174,24 @@ class _LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
+    return CupertinoPageScaffold(
+      backgroundColor: AppTheme.backgroundColor(context),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CupertinoActivityIndicator(
               radius: 20,
+              color: AppTheme.isDarkMode(context)
+                  ? AppTheme.primaryColor
+                  : AppTheme.primaryDarkColor,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Loading...',
-              style: TextStyle(
-                fontSize: 16,
-                color: CupertinoColors.secondaryLabel,
+              style: AppTheme.bodyStyle.copyWith(
+                color: AppTheme.secondaryTextColor(context),
+                decoration: TextDecoration.none,
               ),
             ),
           ],
@@ -155,26 +212,41 @@ class _LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: CupertinoColors.black.withAlpha(77),
+      color: AppTheme.isDarkMode(context)
+          ? CupertinoColors.black.withAlpha(180)
+          : CupertinoColors.black.withAlpha(77),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: CupertinoColors.systemBackground.resolveFrom(context),
+            color: AppTheme.cardColor(context),
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.isDarkMode(context)
+                    ? Colors.black.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                spreadRadius: 0,
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CupertinoActivityIndicator(
+              CupertinoActivityIndicator(
                 radius: 16,
+                color: AppTheme.isDarkMode(context)
+                    ? AppTheme.primaryColor
+                    : AppTheme.primaryDarkColor,
               ),
               const SizedBox(height: 16),
               Text(
                 message,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: AppTheme.bodyStyle.copyWith(
+                  color: AppTheme.textColor(context),
                   fontWeight: FontWeight.w500,
+                  decoration: TextDecoration.none,
                 ),
                 textAlign: TextAlign.center,
               ),
