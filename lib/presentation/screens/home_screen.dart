@@ -9,7 +9,6 @@ import '../../domain/entities/user.dart';
 import '../blocs/user_swipe/user_swipe_bloc.dart';
 import '../blocs/user_swipe/user_swipe_event.dart';
 import '../blocs/user_swipe/user_swipe_state.dart';
-import '../theme/theme.dart';
 import '../widgets/match_dialog.dart';
 import '../widgets/user_card.dart';
 
@@ -43,10 +42,23 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocProvider.value(
       value: _userSwipeBloc,
       child: CupertinoPageScaffold(
-        navigationBar: const CupertinoNavigationBar(
-          middle: Text('Beer Tinder'),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        navigationBar: CupertinoNavigationBar(
+          backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
+              Theme.of(context).scaffoldBackgroundColor,
+          middle: Text(
+            'Beer Tinder',
+            style: TextStyle(
+              color: Theme.of(context).textTheme.titleLarge?.color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          border: null, // Remove the border to reduce space
         ),
         child: SafeArea(
+          // Set top to false to minimize the gap at the top
+          top: false,
+          bottom: true,
           child: BlocConsumer<UserSwipeBloc, UserSwipeState>(
             listener: (context, state) {
               if (state is UserSwipeMatch) {
@@ -62,9 +74,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 return Center(
                   child: Text(
                     'Error: ${state.message}',
-                    style: AppTheme.bodyStyle.copyWith(
-                      color: AppTheme.errorColor,
-                    ),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                   ),
                 );
               }
@@ -79,30 +91,38 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSwipeCards(BuildContext context, List<User> users) {
     final hasUsers = users.isNotEmpty;
     final count = hasUsers ? users.length : 1;
+
+    // Get the available height to better calculate proportions
+    final screenHeight = MediaQuery.of(context).size.height;
+    final navBarHeight = CupertinoNavigationBar().preferredSize.height;
+    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+
     return Column(
       children: [
-        Expanded(
+        // Card swiper section - reduced to 70% of available height
+        SizedBox(
+          height: (screenHeight - navBarHeight) * 0.70, // Reduced to 70% to give more room for buttons
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(top: 0, left: 16, right: 16, bottom: 0),
             child: CardSwiper(
               key: ValueKey(count),
               controller: _cardController,
               cardsCount: count,
               onSwipe: hasUsers
-                  ? (prev, curr, dir) {
+                  ? (prev, curr, direction) {
                       final user = users[prev];
                       _userSwipeBloc.add(
-                        dir == CardSwiperDirection.right
+                        direction == CardSwiperDirection.right
                             ? LikeUser(user)
                             : DislikeUser(user),
                       );
                       return true;
                     }
-                  : (_, __, ___) => false,
+                  : (index, secondIndex, direction) => false,
               numberOfCardsDisplayed: math.min(3, count),
               backCardOffset: const Offset(20, 20),
-              padding: const EdgeInsets.all(24),
-              cardBuilder: (BuildContext context, int index, int horizontalOffset, int verticalOffset) {
+              padding: const EdgeInsets.all(16),
+              cardBuilder: (context, index, horizontalOffset, verticalOffset) {
                 if (!hasUsers) {
                   return _buildNoMoreCard();
                 }
@@ -111,14 +131,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
+
+        // Spacer to push buttons to bottom
+        const Spacer(),
+
+        // Bottom buttons container with more space
+        Container(
+          height: 170 + bottomSafeArea, // Significantly increased height to ensure buttons are fully visible
+          padding: const EdgeInsets.only(bottom: 32, left: 16, right: 16, top: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildActionButton(
                 icon: CupertinoIcons.xmark_circle_fill,
-                color: AppTheme.errorColor,
+                color: Theme.of(context).colorScheme.error,
                 onTap: () {
                   if (hasUsers) {
                     _cardController.swipe(CardSwiperDirection.left);
@@ -129,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               _buildActionButton(
                 icon: CupertinoIcons.heart_fill,
-                color: AppTheme.successColor,
+                color: Colors.green,
                 onTap: () {
                   if (hasUsers) {
                     _cardController.swipe(CardSwiperDirection.right);
@@ -148,11 +174,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildNoMoreCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(26),
             blurRadius: 8,
             spreadRadius: 2,
           ),
@@ -165,19 +191,19 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(
               CupertinoIcons.person_2_fill,
               size: 80,
-              color: AppTheme.primaryColor.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.primary.withAlpha(128),
             ),
             const SizedBox(height: 16),
             Text(
               'No more beer buddies nearby',
-              style: AppTheme.titleStyle,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
               'Pull to refresh',
-              style: AppTheme.bodyStyle.copyWith(
-                color: AppTheme.secondaryTextColor,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -197,48 +223,17 @@ class _HomeScreenState extends State<HomeScreen> {
         width: 64,
         height: 64,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withAlpha(26),
               blurRadius: 8,
               spreadRadius: 2,
             ),
           ],
         ),
         child: Icon(icon, color: color, size: 32),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            CupertinoIcons.person_2_fill,
-            size: 80,
-            color: AppTheme.primaryColor.withOpacity(0.5),
-          ),
-          const SizedBox(height: 16),
-          Text('No more beer buddies nearby', style: AppTheme.titleStyle),
-          const SizedBox(height: 8),
-          Text(
-            'Check back later or expand your search radius',
-            style: AppTheme.bodyStyle.copyWith(
-              color: AppTheme.secondaryTextColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          CupertinoButton(
-            color: AppTheme.primaryColor,
-            onPressed: () => _userSwipeBloc.add(const LoadUsers()),
-            child: const Text('Refresh'),
-          ),
-        ],
       ),
     );
   }
@@ -254,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.of(ctx).pop();
           ScaffoldMessenger.of(ctx).showSnackBar(
             const SnackBar(content: Text('Messaging feature coming soon!')),
-            );
+          );
         },
       ),
     );

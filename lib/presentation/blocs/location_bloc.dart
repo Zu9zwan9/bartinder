@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../core/services/location_service.dart';
 import '../../data/repositories/location_repository.dart';
+import '../../domain/entities/distance_filter.dart';
 
 part 'location_event.dart';
 part 'location_state.dart';
@@ -20,6 +21,7 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   }) : super(LocationInitial()) {
     on<GetAndSaveLocationEvent>(_onGetAndSaveLocation);
     on<FindUsersNearbyEvent>(_onFindUsersNearby);
+    on<FindUsersByDistanceFilterEvent>(_onFindUsersByDistanceFilter);
   }
 
   Future<void> _onGetAndSaveLocation(
@@ -52,5 +54,22 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     );
     emit(UsersNearbyLoaded(users));
   }
-}
 
+  Future<void> _onFindUsersByDistanceFilter(
+    FindUsersByDistanceFilterEvent event,
+    Emitter<LocationState> emit,
+  ) async {
+    emit(LocationLoading());
+    try {
+      final users = await locationRepository.getUsersByDistanceFilter(
+        latitude: event.latitude,
+        longitude: event.longitude,
+        distanceFilter: event.distanceFilter,
+        excludeUserId: userId,
+      );
+      emit(UsersNearbyLoaded(users));
+    } catch (e) {
+      emit(LocationError('Не удалось найти пользователей: ${e.toString()}'));
+    }
+  }
+}

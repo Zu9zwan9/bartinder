@@ -1,15 +1,20 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'data/services/auth_service.dart';
 
 import 'core/bloc_observer.dart';
+import 'data/services/auth_service.dart';
 import 'presentation/app.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
+import 'presentation/blocs/theme/theme_bloc.dart';
+import 'presentation/theme/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize theme
+  AppTheme.initialize();
 
   // Load environment variables
   await dotenv.load();
@@ -34,8 +39,11 @@ class BeerTinderRoot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => AuthBloc()),
+        BlocProvider(create: (context) => ThemeBloc()..add(const LoadThemeEvent())),
+      ],
       child: const BeerTinderApp(),
     );
   }

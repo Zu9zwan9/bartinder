@@ -155,7 +155,7 @@ class _LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: CupertinoColors.black.withOpacity(0.3),
+      color: CupertinoColors.black.withAlpha(77),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(24),

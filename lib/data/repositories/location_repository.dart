@@ -59,4 +59,14 @@ class LocationRepository {
         .toList();
     return List<Map<String, dynamic>>.from(users);
   }
+
+  Future<List<Map<String, dynamic>>> getUsersByDistanceFilter({
+    required double latitude,
+    required double longitude,
+    required dynamic distanceFilter,
+    required String excludeUserId,
+  }) async {
+    // TODO: Implement this method
+    return [];
+  }
 }

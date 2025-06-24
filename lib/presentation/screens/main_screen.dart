@@ -5,6 +5,7 @@ import 'bars_screen.dart';
 import 'home_screen.dart';
 import 'matches_screen.dart';
 import 'profile_screen.dart';
+import 'settings_screen.dart';
 
 /// Main screen with bottom navigation
 class MainScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _MainScreenState extends State<MainScreen> {
     const BarsScreen(),
     const MatchesScreen(),
     const ProfileScreen(),
+    const SettingsScreen(),
   ];
 
   @override

@@ -43,15 +43,30 @@ class _BarsScreenState extends State<BarsScreen> {
     return BlocProvider.value(
       value: _barsBloc,
       child: CupertinoPageScaffold(
+        backgroundColor: AppTheme.backgroundColor(context),
         navigationBar: CupertinoNavigationBar(
-          middle: const Text('Discover Bars'),
+          backgroundColor: AppTheme.isDarkMode(context)
+              ? AppTheme.darkCardColor
+              : Colors.white,
+          middle: Text(
+            'Discover Bars',
+            style: AppTheme.titleStyle.copyWith(
+              color: AppTheme.textColor(context),
+            ),
+          ),
           trailing: CupertinoButton(
             padding: EdgeInsets.zero,
-            child: const Icon(CupertinoIcons.refresh),
+            child: Icon(
+              CupertinoIcons.refresh,
+              color: AppTheme.primaryColor,
+            ),
             onPressed: () => _barsBloc.add(const RefreshBars()),
           ),
+          border: null, // Remove border to reduce space
         ),
         child: SafeArea(
+          top: false, // Minimize gap at top
+          bottom: false, // For manual layout control
           child: BlocConsumer<BarsBloc, BarsState>(
             listener: (context, state) {
               if (state is BarDetailsLoaded) {
@@ -66,7 +81,13 @@ class _BarsScreenState extends State<BarsScreen> {
             },
             builder: (context, state) {
               if (state is BarsLoading) {
-                return const Center(child: CupertinoActivityIndicator());
+                return Center(
+                  child: CupertinoActivityIndicator(
+                    color: AppTheme.isDarkMode(context)
+                        ? AppTheme.primaryColor
+                        : AppTheme.primaryDarkColor,
+                  ),
+                );
               } else if (state is BarsLoaded) {
                 return state.bars.isEmpty
                     ? _buildEmptyState()
@@ -76,12 +97,18 @@ class _BarsScreenState extends State<BarsScreen> {
                   child: Text(
                     'Error: ${state.message}',
                     style: AppTheme.bodyStyle.copyWith(
-                      color: AppTheme.errorColor,
+                      color: AppTheme.errorColor(context),
                     ),
                   ),
                 );
               }
-              return const Center(child: CupertinoActivityIndicator());
+              return Center(
+                child: CupertinoActivityIndicator(
+                  color: AppTheme.isDarkMode(context)
+                      ? AppTheme.primaryColor
+                      : AppTheme.primaryDarkColor,
+                ),
+              );
             },
           ),
         ),
@@ -90,69 +117,113 @@ class _BarsScreenState extends State<BarsScreen> {
   }
 
   Widget _buildBarsList(BuildContext context, List<Bar> bars) {
+    // Calculate screen dimensions and safe areas
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    // Fixed height for bottom action area
+    const actionAreaHeight = 200.0;
+
+    // Calculate the space needed for the heading users section
+    final bool hasHeadingUsers = bars.isNotEmpty && bars[0].usersHeadingThere.isNotEmpty;
+    final headingUsersHeight = hasHeadingUsers ? 100.0 : 0.0;
+
     return Column(
       children: [
+        // Card swiper section with flexible height using Expanded
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CardSwiper(
-              controller: _cardController,
-              cardsCount: bars.length,
-              onSwipe: (prev, curr, dir) {
-                final bar = bars[prev];
-                _barsBloc.add(
-                  dir == CardSwiperDirection.right
-                      ? LikeBar(bar.id)
-                      : DislikeBar(bar.id),
-                );
-                return true;
-              },
-              numberOfCardsDisplayed: 3,
-              backCardOffset: const Offset(20, 20),
-              padding: const EdgeInsets.all(24),
-              cardBuilder: (context, index, horizontalOffset, verticalOffset) {
-                return BarCard(
-                  bar: bars[index],
-                  onTap: () => _barsBloc.add(ViewBarDetails(bars[index].id)),
-                );
-              },
+          child: SizedBox(
+            width: screenWidth,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4, left: 16, right: 16, bottom: 0),
+              child: CardSwiper(
+                controller: _cardController,
+                cardsCount: bars.length,
+                onSwipe: (prev, curr, dir) {
+                  final bar = bars[prev];
+                  _barsBloc.add(
+                    dir == CardSwiperDirection.right
+                        ? LikeBar(bar.id)
+                        : DislikeBar(bar.id),
+                  );
+                  return true;
+                },
+                numberOfCardsDisplayed: 3,
+                backCardOffset: const Offset(20, 20),
+                padding: const EdgeInsets.all(16),
+                cardBuilder: (context, index, horizontalOffset, verticalOffset) {
+                  return BarCard(
+                    bar: bars[index],
+                    onTap: () => _barsBloc.add(ViewBarDetails(bars[index].id)),
+                  );
+                },
+              ),
             ),
           ),
         ),
-        if (bars.isNotEmpty && bars[0].usersHeadingThere.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'People heading to ${bars[0].name}:',
-                  style: AppTheme.subtitleStyle,
-                ),
-                const SizedBox(height: 8),
-                HeadingUsersList(userIds: bars[0].usersHeadingThere),
-                const SizedBox(height: 16),
-              ],
+
+        // Heading users section if applicable
+        if (hasHeadingUsers)
+          SizedBox(
+            height: headingUsersHeight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'People heading to ${bars[0].name}:',
+                    style: AppTheme.subtitleStyle.copyWith(
+                      color: AppTheme.textColor(context),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 70,
+                    child: HeadingUsersList(userIds: bars[0].usersHeadingThere),
+                  ),
+                ],
+              ),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
+
+        // Action buttons section with fixed height
+        Container(
+          height: actionAreaHeight,
+          width: screenWidth,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildActionButton(
-                icon: CupertinoIcons.xmark_circle_fill,
-                color: AppTheme.errorColor,
-                onTap: () => _cardController.swipe(CardSwiperDirection.left),
+              // Dislike button
+              Expanded(
+                child: _buildActionButton(
+                  icon: CupertinoIcons.xmark_circle_fill,
+                  color: AppTheme.errorColor(context),
+                  onTap: () => _cardController.swipe(CardSwiperDirection.left),
+                ),
               ),
-              _buildActionButton(
-                icon: CupertinoIcons.heart_fill,
-                color: AppTheme.successColor,
-                onTap: () => _cardController.swipe(CardSwiperDirection.right),
+
+              const SizedBox(width: 20), // Space between buttons
+
+              // Like button
+              Expanded(
+                child: _buildActionButton(
+                  icon: CupertinoIcons.heart_fill,
+                  color: AppTheme.successColor(context),
+                  onTap: () => _cardController.swipe(CardSwiperDirection.right),
+                ),
               ),
             ],
           ),
         ),
+
+        // Bottom spacer for system padding
+        SizedBox(height: bottomPadding),
       ],
     );
   }
@@ -162,23 +233,32 @@ class _BarsScreenState extends State<BarsScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(26),
-              blurRadius: 8,
-              spreadRadius: 2,
-            ),
-          ],
+    return Center(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: AppTheme.cardColor(context),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.isDarkMode(context)
+                    ? Colors.black.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                spreadRadius: 1,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 36,
+          ),
         ),
-        child: Icon(icon, color: color, size: 32),
       ),
     );
   }
@@ -194,12 +274,17 @@ class _BarsScreenState extends State<BarsScreen> {
             color: AppTheme.primaryColor.withAlpha(128),
           ),
           const SizedBox(height: 16),
-          Text('No bars found nearby', style: AppTheme.titleStyle),
+          Text(
+            'No bars found nearby',
+            style: AppTheme.titleStyle.copyWith(
+              color: AppTheme.textColor(context),
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             'Try expanding your search radius or check back later',
             style: AppTheme.bodyStyle.copyWith(
-              color: AppTheme.secondaryTextColor,
+              color: AppTheme.secondaryTextColor(context),
             ),
             textAlign: TextAlign.center,
           ),
@@ -207,7 +292,12 @@ class _BarsScreenState extends State<BarsScreen> {
           CupertinoButton(
             color: AppTheme.primaryColor,
             onPressed: () => _barsBloc.add(const RefreshBars()),
-            child: const Text('Refresh'),
+            child: Text(
+              'Refresh',
+              style: AppTheme.buttonStyle.copyWith(
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),
@@ -232,11 +322,26 @@ class _BarsScreenState extends State<BarsScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Check-in Successful'),
-        content: Text('You have checked in to $barName'),
+        title: Text(
+          'Check-in Successful',
+          style: AppTheme.subtitleStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        content: Text(
+          'You have checked in to $barName',
+          style: AppTheme.bodyStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.primaryColor,
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -248,13 +353,26 @@ class _BarsScreenState extends State<BarsScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Location Services Disabled'),
-        content: const Text(
+        title: Text(
+          'Location Services Disabled',
+          style: AppTheme.subtitleStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        content: Text(
           'Please enable location services in your device settings to see bars near you.',
+          style: AppTheme.bodyStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
         ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.primaryColor,
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -266,13 +384,26 @@ class _BarsScreenState extends State<BarsScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Location Permission Denied'),
-        content: const Text(
+        title: Text(
+          'Location Permission Denied',
+          style: AppTheme.subtitleStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        content: Text(
           'Please grant location permission to see bars near you.',
+          style: AppTheme.bodyStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
         ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.primaryColor,
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],

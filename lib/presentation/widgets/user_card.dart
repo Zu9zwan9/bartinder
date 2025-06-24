@@ -9,10 +9,7 @@ import '../theme/theme.dart';
 class UserCard extends StatelessWidget {
   final User user;
 
-  const UserCard({
-    super.key,
-    required this.user,
-  });
+  const UserCard({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +132,7 @@ class UserCard extends StatelessWidget {
                           children: [
                             Icon(
                               CupertinoIcons.location_fill,
-                              color: AppTheme.successColor,
+                              color: AppTheme.successColor(context),
                               size: 16,
                             ),
                             const SizedBox(width: 4),

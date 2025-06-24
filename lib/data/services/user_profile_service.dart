@@ -14,9 +14,7 @@ class UserProfileService {
           .select('avatar_url, email, name')
           .eq('id', userId)
           .single();
-      if (response != null && response is Map<String, dynamic>) {
-        return response;
-      }
+      return response;
     } catch (e) {
       if (kDebugMode) {
         print('Error fetching user profile for $userId: $e');

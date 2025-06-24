@@ -24,3 +24,17 @@ class FindUsersNearbyEvent extends LocationEvent {
   List<Object?> get props => [latitude, longitude, radiusInKm];
 }
 
+class FindUsersByDistanceFilterEvent extends LocationEvent {
+  final double latitude;
+  final double longitude;
+  final DistanceFilter distanceFilter;
+
+  const FindUsersByDistanceFilterEvent({
+    required this.latitude,
+    required this.longitude,
+    required this.distanceFilter,
+  });
+
+  @override
+  List<Object?> get props => [latitude, longitude, distanceFilter];
+}
