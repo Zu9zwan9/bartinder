@@ -3,7 +3,7 @@ markdown
 
 A Flutter application for beer enthusiasts to discover and rate their favorite brews with a familiar swipe interface.
 
-![SipSwipe Banner](https://via.placeholder.com/800x200/FFB900/000000?text=BeerTinder)
+![SipSwipe Banner](logo.html)
 
 ## 📝 Description
 
