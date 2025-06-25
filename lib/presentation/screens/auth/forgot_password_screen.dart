@@ -49,15 +49,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppTheme.backgroundColor(context),
+      backgroundColor: AppTheme.mineShaft,
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Reset Password',
-          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
+          style: AppTheme.navTitle.copyWith(color: Colors.white),
         ),
-        backgroundColor: AppTheme.isDarkMode(context)
-            ? AppTheme.darkCardColor
-            : Colors.white,
+        backgroundColor: AppTheme.mineShaft,
         border: null,
         leading: CupertinoNavigationBarBackButton(
           color: AppTheme.systemBlue(context),
@@ -94,7 +92,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Text(
                     'Reset Your Password',
                     style: AppTheme.title1.copyWith(
-                      color: AppTheme.textColor(context),
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -116,7 +114,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   // Email Field
                   Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.cardColor(context),
+                      color: AppTheme.darkCardColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(
@@ -138,14 +136,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             placeholderStyle: AppTheme.body.copyWith(
                               color: AppTheme.secondaryTextColor(context),
                             ),
-                            style: AppTheme.body.copyWith(
-                              color: AppTheme.textColor(context),
-                            ),
+                            style: AppTheme.body.copyWith(color: Colors.white),
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.done,
                             autocorrect: false,
-                            decoration: BoxDecoration(
-                              color: AppTheme.cardColor(context),
+                            decoration: const BoxDecoration(
+                              color: AppTheme.darkCardColor,
                             ),
                             padding: EdgeInsets.zero,
                             onSubmitted: (_) => _resetPassword(),
@@ -174,9 +170,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.isDarkMode(context)
-                          ? AppTheme.darkSurfaceColor
-                          : AppTheme.systemGray6(context),
+                      color: AppTheme.darkSurfaceColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
@@ -217,9 +211,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onPressed: () => context.go('/auth/signin'),
                     child: RichText(
                       text: TextSpan(
-                        style: AppTheme.body.copyWith(
-                          color: AppTheme.textColor(context),
-                        ),
+                        style: AppTheme.body.copyWith(color: Colors.white),
                         children: [
                           const TextSpan(text: 'Remember your password? '),
                           TextSpan(

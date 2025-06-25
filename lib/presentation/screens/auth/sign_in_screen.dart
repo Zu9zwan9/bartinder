@@ -72,11 +72,9 @@ class _SignInScreenState extends State<SignInScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Sign In',
-          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
+          style: AppTheme.navTitle.copyWith(color: Colors.white),
         ),
-        backgroundColor: AppTheme.isDarkMode(context)
-            ? AppTheme.darkCardColor
-            : Colors.white,
+        backgroundColor: AppTheme.mineShaft,
         border: null,
       ),
       child: SafeArea(
@@ -115,7 +113,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   // Email Field
                   Container(
                     decoration: BoxDecoration(
-                      color: AppTheme.cardColor(context),
+                      color: AppTheme.darkCardColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
@@ -141,13 +139,13 @@ class _SignInScreenState extends State<SignInScreen> {
                                     color: AppTheme.secondaryTextColor(context),
                                   ),
                                   style: AppTheme.body.copyWith(
-                                    color: AppTheme.textColor(context),
+                                    color: Colors.white,
                                   ),
                                   keyboardType: TextInputType.emailAddress,
                                   textInputAction: TextInputAction.next,
                                   autocorrect: false,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.cardColor(context),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.darkCardColor,
                                   ),
                                   padding: EdgeInsets.zero,
                                   onSubmitted: (_) {
@@ -184,12 +182,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                     color: AppTheme.secondaryTextColor(context),
                                   ),
                                   style: AppTheme.body.copyWith(
-                                    color: AppTheme.textColor(context),
+                                    color: Colors.white,
                                   ),
                                   obscureText: _obscurePassword,
                                   textInputAction: TextInputAction.done,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.cardColor(context),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.darkCardColor,
                                   ),
                                   padding: EdgeInsets.zero,
                                   onSubmitted: (_) => _signIn(),
@@ -278,9 +276,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     onPressed: () => context.go('/auth/signup'),
                     child: RichText(
                       text: TextSpan(
-                        style: AppTheme.body.copyWith(
-                          color: AppTheme.textColor(context),
-                        ),
+                        style: AppTheme.body.copyWith(color: Colors.white),
                         children: [
                           const TextSpan(text: 'Don\'t have an account? '),
                           TextSpan(

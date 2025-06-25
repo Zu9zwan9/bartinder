@@ -33,8 +33,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
+  // for password validation UI
+  bool _has8Chars = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasNumber = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_updatePasswordRequirements);
+  }
+
   @override
   void dispose() {
+    _passwordController.removeListener(_updatePasswordRequirements);
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -47,6 +60,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _confirmPasswordFocusNode.dispose();
     _ageFocusNode.dispose();
     super.dispose();
+  }
+
+  void _updatePasswordRequirements() {
+    final password = _passwordController.text;
+    setState(() {
+      _has8Chars = password.length >= 8;
+      _hasUppercase = password.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = password.contains(RegExp(r'[a-z]'));
+      _hasNumber = password.contains(RegExp(r'[0-9]'));
+    });
   }
 
   void _signUp() {
@@ -125,7 +148,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppTheme.backgroundColor(context),
+      backgroundColor: AppTheme.mineShaft,
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Sign Up',
@@ -154,20 +177,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 20),
-
-                  // Header
-                  Text(
-                    'Create Account',
-                    style: AppTheme.title1.copyWith(
-                      color: AppTheme.textColor(context),
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 40),
+                  Image.asset(
+                    'assets/images/icon.png',
+                    height: 150,
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   Text(
-                    'Sip. Swipe. Repeat',
+                    'Sip. Swipe. Repeat.',
                     style: AppTheme.subhead.copyWith(
                       color: AppTheme.secondaryTextColor(context),
                     ),
@@ -227,109 +245,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         _buildDivider(),
 
                         // Password field
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                CupertinoIcons.lock,
-                                color: AppTheme.secondaryTextColor(context),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: CupertinoTextField(
-                                  controller: _passwordController,
-                                  focusNode: _passwordFocusNode,
-                                  placeholder: 'Password',
-                                  placeholderStyle: AppTheme.body.copyWith(
-                                    color: AppTheme.secondaryTextColor(context),
-                                  ),
-                                  style: AppTheme.body.copyWith(
-                                    color: AppTheme.textColor(context),
-                                  ),
-                                  obscureText: _obscurePassword,
-                                  textInputAction: TextInputAction.next,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.cardColor(context),
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                  onSubmitted: (_) =>
-                                      _confirmPasswordFocusNode.requestFocus(),
-                                ),
-                              ),
-                              CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                                child: Icon(
-                                  _obscurePassword
-                                      ? CupertinoIcons.eye
-                                      : CupertinoIcons.eye_slash,
-                                  color: AppTheme.secondaryTextColor(context),
-                                ),
-                              ),
-                            ],
-                          ),
+                        _buildPasswordFormField(
+                          controller: _passwordController,
+                          focusNode: _passwordFocusNode,
+                          placeholder: 'Password',
+                          obscureText: _obscurePassword,
+                          onToggleObscureText: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) =>
+                              _confirmPasswordFocusNode.requestFocus(),
                         ),
 
                         _buildDivider(),
 
                         // Confirm Password field
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                CupertinoIcons.lock_fill,
-                                color: AppTheme.secondaryTextColor(context),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: CupertinoTextField(
-                                  controller: _confirmPasswordController,
-                                  focusNode: _confirmPasswordFocusNode,
-                                  placeholder: 'Confirm Password',
-                                  placeholderStyle: AppTheme.body.copyWith(
-                                    color: AppTheme.secondaryTextColor(context),
-                                  ),
-                                  style: AppTheme.body.copyWith(
-                                    color: AppTheme.textColor(context),
-                                  ),
-                                  obscureText: _obscureConfirmPassword,
-                                  textInputAction: TextInputAction.done,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.cardColor(context),
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                  onSubmitted: (_) => _signUp(),
-                                ),
-                              ),
-                              CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: () {
-                                  setState(() {
-                                    _obscureConfirmPassword =
-                                        !_obscureConfirmPassword;
-                                  });
-                                },
-                                child: Icon(
-                                  _obscureConfirmPassword
-                                      ? CupertinoIcons.eye
-                                      : CupertinoIcons.eye_slash,
-                                  color: AppTheme.secondaryTextColor(context),
-                                ),
-                              ),
-                            ],
-                          ),
+                        _buildPasswordFormField(
+                          controller: _confirmPasswordController,
+                          focusNode: _confirmPasswordFocusNode,
+                          placeholder: 'Confirm Password',
+                          obscureText: _obscureConfirmPassword,
+                          onToggleObscureText: () {
+                            setState(() {
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
+                            });
+                          },
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _signUp(),
                         ),
                       ],
                     ),
@@ -350,19 +296,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Password Requirements:',
+                          'Password must contain:',
                           style: AppTheme.footnote.copyWith(
                             color: AppTheme.secondaryTextColor(context),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '• At least 8 characters\n• Contains uppercase letter\n• Contains lowercase letter\n• Contains number',
-                          style: AppTheme.caption1.copyWith(
-                            color: AppTheme.secondaryTextColor(context),
-                          ),
+                        const SizedBox(height: 8),
+                        _buildPasswordRequirement(
+                          'At least 8 characters',
+                          _has8Chars,
                         ),
+                        const SizedBox(height: 4),
+                        _buildPasswordRequirement(
+                          'An uppercase letter',
+                          _hasUppercase,
+                        ),
+                        const SizedBox(height: 4),
+                        _buildPasswordRequirement(
+                          'A lowercase letter',
+                          _hasLowercase,
+                        ),
+                        const SizedBox(height: 4),
+                        _buildPasswordRequirement('A number', _hasNumber),
                       ],
                     ),
                   ),
@@ -395,11 +351,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   // Sign In Button
                   CupertinoButton(
+                    padding: EdgeInsets.zero,
                     onPressed: () => context.go('/auth/signin'),
                     child: RichText(
                       text: TextSpan(
                         style: AppTheme.body.copyWith(
-                          color: AppTheme.textColor(context),
+                          color: AppTheme.secondaryTextColor(context),
                         ),
                         children: [
                           const TextSpan(text: 'Already have an account? '),
@@ -463,11 +420,83 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
+  Widget _buildPasswordFormField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String placeholder,
+    required bool obscureText,
+    required VoidCallback onToggleObscureText,
+    TextInputAction? textInputAction,
+    void Function(String)? onFieldSubmitted,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Icon(
+            placeholder == 'Password'
+                ? CupertinoIcons.lock
+                : CupertinoIcons.lock_fill,
+            color: AppTheme.secondaryTextColor(context),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: CupertinoTextField(
+              controller: controller,
+              focusNode: focusNode,
+              placeholder: placeholder,
+              placeholderStyle: AppTheme.body.copyWith(
+                color: AppTheme.secondaryTextColor(context),
+              ),
+              style: AppTheme.body.copyWith(color: AppTheme.textColor(context)),
+              obscureText: obscureText,
+              textInputAction: textInputAction,
+              decoration: BoxDecoration(color: AppTheme.cardColor(context)),
+              padding: EdgeInsets.zero,
+              onSubmitted: onFieldSubmitted,
+            ),
+          ),
+          CupertinoButton(
+            padding: const EdgeInsets.only(left: 12),
+            onPressed: onToggleObscureText,
+            child: Icon(
+              obscureText ? CupertinoIcons.eye : CupertinoIcons.eye_slash,
+              color: AppTheme.secondaryTextColor(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDivider() {
     return Divider(
       height: 1,
       thickness: 0.5,
       color: AppTheme.dividerColor(context),
+    );
+  }
+
+  Widget _buildPasswordRequirement(String text, bool met) {
+    return Row(
+      children: [
+        Icon(
+          met ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.circle,
+          color: met
+              ? AppTheme.systemGreen(context)
+              : AppTheme.secondaryTextColor(context),
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTheme.footnote.copyWith(
+              color: AppTheme.secondaryTextColor(context),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

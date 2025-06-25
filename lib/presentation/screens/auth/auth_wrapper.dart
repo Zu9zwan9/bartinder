@@ -171,25 +171,17 @@ class _LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppTheme.backgroundColor(context),
+      backgroundColor: AppTheme.mineShaft,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CupertinoActivityIndicator(
+            const CupertinoActivityIndicator(
               radius: 20,
-              color: AppTheme.isDarkMode(context)
-                  ? AppTheme.primaryColor
-                  : AppTheme.primaryDarkColor,
+              color: AppTheme.primaryColor,
             ),
             const SizedBox(height: 16),
-            Text(
-              'Loading...',
-              style: AppTheme.bodyStyle.copyWith(
-                color: AppTheme.secondaryTextColor(context),
-                decoration: TextDecoration.none,
-              ),
-            ),
+            Text('Loading...', style: AppTheme.bodyStyle),
           ],
         ),
       ),
@@ -206,20 +198,16 @@ class _LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppTheme.isDarkMode(context)
-          ? CupertinoColors.black.withAlpha(180)
-          : CupertinoColors.black.withAlpha(77),
+      color: CupertinoColors.black.withAlpha(180),
       child: Center(
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppTheme.cardColor(context),
+            color: AppTheme.darkCardColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.isDarkMode(context)
-                    ? Colors.black.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.1),
+                color: Colors.black.withOpacity(0.3),
                 blurRadius: 10,
                 spreadRadius: 0,
               ),
@@ -228,17 +216,15 @@ class _LoadingOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CupertinoActivityIndicator(
+              const CupertinoActivityIndicator(
                 radius: 16,
-                color: AppTheme.isDarkMode(context)
-                    ? AppTheme.primaryColor
-                    : AppTheme.primaryDarkColor,
+                color: AppTheme.primaryColor,
               ),
               const SizedBox(height: 16),
               Text(
                 message,
                 style: AppTheme.bodyStyle.copyWith(
-                  color: AppTheme.textColor(context),
+                  color: Colors.white,
                   fontWeight: FontWeight.w500,
                   decoration: TextDecoration.none,
                 ),
