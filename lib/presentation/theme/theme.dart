@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
 import 'fonts.dart';
 
 class AppTheme {
@@ -37,11 +38,17 @@ class AppTheme {
   static const String sfProDisplay = AppFonts.sfProDisplay;
   static const String sfProText = AppFonts.sfProText;
 
+  // Brand palette (Apple HIG)
+  static const Color mineShaft = Color(0xFF302E2F);
+  static const Color rajah = Color(0xFFF5BF75);
+  static const Color paleOyster = Color(0xFF948C74);
+  static const Color schooner = Color(0xFF8C847C);
+
   // Brand Colors
-  static const Color primaryColor = Color(0xFFE67E22); // Beer amber
-  static const Color primaryDarkColor = Color(0xFFD35400); // Darker amber
-  static const Color accentColor = Color(0xFF3498DB); // Blue accent
-  static const Color accentDarkColor = Color(0xFF2980B9); // Darker blue
+  static const Color primaryColor = rajah;
+  static const Color primaryDarkColor = rajah;
+  static const Color accentColor = paleOyster;
+  static const Color accentDarkColor = schooner;
 
   // iOS System Colors - Light
   static const Color systemRedLight = Color(0xFFFF3B30);
@@ -84,7 +91,7 @@ class AppTheme {
   static const Color systemGray6Dark = Color(0xFF1C1C1E);
 
   // Light theme colors (following iOS conventions)
-  static const Color lightBackgroundColor = systemGray6Light;
+  static const Color lightBackgroundColor = Colors.white;
   static const Color lightCardColor = Colors.white;
   static const Color lightTextColor = Color(0xFF000000);
   static const Color lightSecondaryTextColor = systemGrayLight;
@@ -94,7 +101,7 @@ class AppTheme {
   static const Color lightSuccessColor = systemGreenLight;
 
   // Dark theme colors (following iOS conventions)
-  static const Color darkBackgroundColor = systemGray6Dark;
+  static const Color darkBackgroundColor = mineShaft;
   static const Color darkCardColor = systemGray5Dark;
   static const Color darkTextColor = Color(0xFFFFFFFF);
   static const Color darkSecondaryTextColor = systemGrayDark;
@@ -204,15 +211,13 @@ class AppTheme {
       onSecondary: Colors.white,
       error: lightErrorColor,
       onError: Colors.white,
-      background: lightBackgroundColor,
-      onBackground: lightTextColor,
       surface: Colors.white,
       onSurface: lightTextColor,
       primaryContainer: Color(0xFFF9E0CE), // Light amber for containers
       onPrimaryContainer: primaryDarkColor,
       secondaryContainer: Color(0xFFD1E9F7), // Light blue for containers
       onSecondaryContainer: accentDarkColor,
-      surfaceVariant: systemGray5Light,
+      surfaceContainerHighest: systemGray5Light,
       onSurfaceVariant: lightSecondaryTextColor,
     ),
     appBarTheme: AppBarTheme(
@@ -362,15 +367,13 @@ class AppTheme {
       onSecondary: Colors.white,
       error: darkErrorColor,
       onError: Colors.white,
-      background: darkBackgroundColor,
-      onBackground: darkTextColor,
       surface: darkCardColor,
       onSurface: darkTextColor,
       primaryContainer: darkPrimaryColorVariant,
       onPrimaryContainer: Colors.white,
       secondaryContainer: accentDarkColor,
       onSecondaryContainer: Colors.white,
-      surfaceVariant: darkSurfaceColor,
+      surfaceContainerHighest: darkSurfaceColor,
       onSurfaceVariant: darkSecondaryTextColor,
     ),
     appBarTheme: AppBarTheme(

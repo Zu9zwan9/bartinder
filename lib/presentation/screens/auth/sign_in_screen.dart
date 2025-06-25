@@ -68,7 +68,7 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppTheme.backgroundColor(context),
+      backgroundColor: AppTheme.mineShaft,
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Sign In',
@@ -96,21 +96,12 @@ class _SignInScreenState extends State<SignInScreen> {
                   const SizedBox(height: 40),
 
                   // App Logo/Title
-                  Icon(
-                    CupertinoIcons.heart_fill,
-                    size: 80,
-                    color: AppTheme.systemPink(context),
+                  Image.asset(
+                    'assets/images/icon.png',
+                    height: 200,
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'SipSwipe',
-                    style: AppTheme.largeTitle.copyWith(
-                      color: AppTheme.textColor(context),
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
+
                   Text(
                     'Find your perfect bar match',
                     style: AppTheme.subhead.copyWith(
