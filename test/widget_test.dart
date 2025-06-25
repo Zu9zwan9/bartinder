@@ -1,9 +1,6 @@
-// Basic Flutter widget test for Beer Tinder app
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:beertinder/main.dart';
+import 'package:sipswipe/main.dart';
 
 void main() {
   testWidgets('App loads successfully', (WidgetTester tester) async {

@@ -46,15 +46,23 @@ class UserModel {
       passwordHash: map['password_hash'] as String,
       avatarUrl: map['avatar_url'] as String?,
       gender: map['gender'] as String?,
-      birthDate: map['birth_date'] != null ? DateTime.parse(map['birth_date'] as String) : null,
+      birthDate: map['birth_date'] != null
+          ? DateTime.parse(map['birth_date'] as String)
+          : null,
       bio: map['bio'] as String?,
-      location: map['location'] != null ? LocationModel.fromMap(map['location'] as Map<String, dynamic>) : null,
+      location: map['location'] != null
+          ? LocationModel.fromMap(map['location'] as Map<String, dynamic>)
+          : null,
       city: map['city'] as String?,
       country: map['country'] as String?,
-      interests: map['interests'] != null ? List<String>.from(map['interests'] as List) : null,
+      interests: map['interests'] != null
+          ? List<String>.from(map['interests'] as List)
+          : null,
       isPremium: map['is_premium'] as bool,
       createdAt: DateTime.parse(map['created_at'] as String),
-      lastActiveAt: map['last_active_at'] != null ? DateTime.parse(map['last_active_at'] as String) : null,
+      lastActiveAt: map['last_active_at'] != null
+          ? DateTime.parse(map['last_active_at'] as String)
+          : null,
     );
   }
 

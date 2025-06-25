@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 
 class BeerTinderApp extends StatelessWidget {
@@ -6,9 +5,7 @@ class BeerTinderApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
-      home: HomeScreen(),
-    );
+    return const CupertinoApp(home: HomeScreen());
   }
 }
 
@@ -18,12 +15,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('BeerTinder'),
-      ),
-      child: Center(
-        child: Text('Welcome to BeerTinder!'),
-      ),
+      navigationBar: CupertinoNavigationBar(middle: Text('BeerTinder')),
+      child: Center(child: Text('Welcome to BeerTinder!')),
     );
   }
 }

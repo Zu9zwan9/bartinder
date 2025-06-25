@@ -188,7 +188,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
         if (mounted) _showSuccessMessage('Avatar updated successfully!');
       } else {
-        if (mounted) _showErrorMessage('Failed to update avatar. Please try again.');
+        if (mounted)
+          _showErrorMessage('Failed to update avatar. Please try again.');
       }
     } catch (e) {
       if (mounted) _showErrorMessage('An error occurred while updating avatar');
@@ -266,9 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Profile',
-          style: AppTheme.navTitle.copyWith(
-            color: AppTheme.textColor(context),
-          ),
+          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
         ),
         backgroundColor: AppTheme.isDarkMode(context)
             ? AppTheme.darkCardColor
@@ -317,12 +316,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               )
                             : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                                ? _buildAvatar(_avatarUrl!)
-                                : Icon(
-                                    CupertinoIcons.person_fill,
-                                    size: 50,
-                                    color: AppTheme.iconColor(context),
-                                  ),
+                            ? _buildAvatar(_avatarUrl!)
+                            : Icon(
+                                CupertinoIcons.person_fill,
+                                size: 50,
+                                color: AppTheme.iconColor(context),
+                              ),
                       ),
                     ),
                   ),
@@ -332,7 +331,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CupertinoButton(
                       color: AppTheme.systemBlue(context),
                       borderRadius: BorderRadius.circular(8),
-                      onPressed: _isUpdatingAvatar ? null : _generateNewRandomAvatar,
+                      onPressed: _isUpdatingAvatar
+                          ? null
+                          : _generateNewRandomAvatar,
                       child: Text(
                         'Generate Avatar',
                         style: AppTheme.buttonStyle.copyWith(
@@ -443,9 +444,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onPressed: _signOut,
                     child: Text(
                       'Sign Out',
-                      style: AppTheme.buttonStyle.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: AppTheme.buttonStyle.copyWith(color: Colors.white),
                     ),
                   ),
 
@@ -453,7 +452,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   // App Version
                   Text(
-                    'Beer Tinder v1.0.0',
+                    'SipSwipe v1.0.0',
                     style: AppTheme.caption2.copyWith(
                       color: AppTheme.secondaryTextColor(context),
                     ),
@@ -492,11 +491,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 24,
-          ),
+          Icon(icon, color: color, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -531,11 +526,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            Icon(icon, color: color, size: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

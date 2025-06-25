@@ -9,8 +9,8 @@ class UserSwipeBloc extends Bloc<UserSwipeEvent, UserSwipeState> {
   final UserRepository _userRepository;
 
   UserSwipeBloc({required UserRepository userRepository})
-      : _userRepository = userRepository,
-        super(const UserSwipeInitial()) {
+    : _userRepository = userRepository,
+      super(const UserSwipeInitial()) {
     on<LoadUsers>(_onLoadUsers);
     on<LikeUser>(_onLikeUser);
     on<DislikeUser>(_onDislikeUser);
@@ -33,10 +33,7 @@ class UserSwipeBloc extends Bloc<UserSwipeEvent, UserSwipeState> {
   }
 
   /// Handle the LikeUser event
-  Future<void> _onLikeUser(
-    LikeUser event,
-    Emitter<UserSwipeState> emit,
-  ) async {
+  Future<void> _onLikeUser(LikeUser event, Emitter<UserSwipeState> emit) async {
     if (state is UserSwipeLoaded) {
       final currentState = state as UserSwipeLoaded;
       try {
@@ -49,14 +46,15 @@ class UserSwipeBloc extends Bloc<UserSwipeEvent, UserSwipeState> {
           emit(UserSwipeMatch(event.user));
 
           // Then update the loaded state with the updated users list
-          final updatedUsers = currentState.users.where((user) => user.id != event.user.id).toList();
-          emit(currentState.copyWith(
-            users: updatedUsers,
-            matches: matches,
-          ));
+          final updatedUsers = currentState.users
+              .where((user) => user.id != event.user.id)
+              .toList();
+          emit(currentState.copyWith(users: updatedUsers, matches: matches));
         } else {
           // If it's not a match, just update the users list
-          final updatedUsers = currentState.users.where((user) => user.id != event.user.id).toList();
+          final updatedUsers = currentState.users
+              .where((user) => user.id != event.user.id)
+              .toList();
           emit(currentState.copyWith(users: updatedUsers));
         }
       } catch (e) {
@@ -76,7 +74,9 @@ class UserSwipeBloc extends Bloc<UserSwipeEvent, UserSwipeState> {
         await _userRepository.dislikeUser(event.user.id);
 
         // Update the users list by removing the disliked user
-        final updatedUsers = currentState.users.where((user) => user.id != event.user.id).toList();
+        final updatedUsers = currentState.users
+            .where((user) => user.id != event.user.id)
+            .toList();
         emit(currentState.copyWith(users: updatedUsers));
       } catch (e) {
         emit(UserSwipeError('Failed to dislike user: ${e.toString()}'));
@@ -85,10 +85,7 @@ class UserSwipeBloc extends Bloc<UserSwipeEvent, UserSwipeState> {
   }
 
   /// Handle the MatchCreated event
-  void _onMatchCreated(
-    MatchCreated event,
-    Emitter<UserSwipeState> emit,
-  ) {
+  void _onMatchCreated(MatchCreated event, Emitter<UserSwipeState> emit) {
     emit(UserSwipeMatch(event.matchedUser));
 
     // After showing the match, go back to the loaded state

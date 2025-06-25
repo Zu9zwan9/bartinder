@@ -28,4 +28,3 @@ class UserActionFailure extends UserActionState {
   @override
   List<Object> get props => [error];
 }
-

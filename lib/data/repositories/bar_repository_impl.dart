@@ -9,7 +9,7 @@ class BarRepositoryImpl implements BarRepository {
   final MockBarDataSource _dataSource;
 
   BarRepositoryImpl({MockBarDataSource? dataSource})
-      : _dataSource = dataSource ?? MockBarDataSource();
+    : _dataSource = dataSource ?? MockBarDataSource();
 
   @override
   Future<List<Bar>> getBars() async {
@@ -54,7 +54,10 @@ class BarRepositoryImpl implements BarRepository {
     // TODO In a real app, we would store this in a database with timestamp
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('last_checkin', barId);
-    await prefs.setInt('last_checkin_time', DateTime.now().millisecondsSinceEpoch);
+    await prefs.setInt(
+      'last_checkin_time',
+      DateTime.now().millisecondsSinceEpoch,
+    );
   }
 
   @override
@@ -62,6 +65,11 @@ class BarRepositoryImpl implements BarRepository {
     // TODO In a real app, we would query a database for bars with planned visits
     // For now, we'll just return bars that have plannedVisitorsCount > 0
     final bars = _dataSource.getBars();
-    return bars.where((bar) => bar.plannedVisitorsCount != null && bar.plannedVisitorsCount! > 0).toList();
+    return bars
+        .where(
+          (bar) =>
+              bar.plannedVisitorsCount != null && bar.plannedVisitorsCount! > 0,
+        )
+        .toList();
   }
 }

@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Represents a match between two users in the beerTinder app
 class Match extends Equatable {
   final String id;
   final String userId;
@@ -22,12 +21,12 @@ class Match extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        userId,
-        matchedUserId,
-        matchedAt,
-        isAccepted,
-        barId,
-        meetupTime,
-      ];
+    id,
+    userId,
+    matchedUserId,
+    matchedAt,
+    isAccepted,
+    barId,
+    meetupTime,
+  ];
 }

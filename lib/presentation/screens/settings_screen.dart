@@ -56,14 +56,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: AppTheme.textColor(context),
             ),
           ),
-          iconTheme: IconThemeData(
-            color: AppTheme.textColor(context),
-          ),
+          iconTheme: IconThemeData(color: AppTheme.textColor(context)),
         ),
         body: _isLoading
-            ? Center(child: CupertinoActivityIndicator(
-                color: AppTheme.primaryColor,
-              ))
+            ? Center(
+                child: CupertinoActivityIndicator(color: AppTheme.primaryColor),
+              )
             : _buildSettingsList(),
       ),
     );
@@ -338,7 +336,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withAlpha(26), // Using withAlpha instead of withOpacity
+                color: AppTheme.primaryColor.withAlpha(
+                  26,
+                ), // Using withAlpha instead of withOpacity
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: AppTheme.primaryColor, size: 20),

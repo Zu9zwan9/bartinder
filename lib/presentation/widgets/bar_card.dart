@@ -110,7 +110,9 @@ class BarCard extends StatelessWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(153), // Using withAlpha instead of withOpacity
+                                color: Colors.black.withAlpha(
+                                  153,
+                                ), // Using withAlpha instead of withOpacity
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(

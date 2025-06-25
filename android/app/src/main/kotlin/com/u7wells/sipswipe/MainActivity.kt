@@ -1,4 +1,4 @@
-package com.example.beertinder
+package com.u7wells.sipswipe
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -31,10 +31,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void _resetPassword() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthPasswordResetRequested(
-              email: _emailController.text.trim(),
-            ),
-          );
+        AuthPasswordResetRequested(email: _emailController.text.trim()),
+      );
     }
   }
 
@@ -55,9 +53,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Reset Password',
-          style: AppTheme.navTitle.copyWith(
-            color: AppTheme.textColor(context),
-          ),
+          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
         ),
         backgroundColor: AppTheme.isDarkMode(context)
             ? AppTheme.darkCardColor
@@ -123,7 +119,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       color: AppTheme.cardColor(context),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         Icon(
@@ -165,9 +164,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onPressed: _resetPassword,
                     child: Text(
                       'Send Reset Instructions',
-                      style: AppTheme.button.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: AppTheme.button.copyWith(color: Colors.white),
                     ),
                   ),
 

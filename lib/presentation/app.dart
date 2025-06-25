@@ -21,7 +21,7 @@ class BeerTinderApp extends StatelessWidget {
     return BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, themeState) {
         return MaterialApp.router(
-          title: 'Beer Tinder',
+          title: 'SipSwipe',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeState.themeMode,
@@ -30,9 +30,7 @@ class BeerTinderApp extends StatelessWidget {
             GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
-            Locale('en', 'US'),
-          ],
+          supportedLocales: const [Locale('en', 'US')],
           routerConfig: _createRouter(context),
           debugShowCheckedModeBanner: false,
         );
@@ -63,9 +61,7 @@ class BeerTinderApp extends StatelessWidget {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) => const AuthWrapper(
-            child: MainScreen(),
-          ),
+          builder: (context, state) => const AuthWrapper(child: MainScreen()),
         ),
         GoRoute(
           path: '/auth/signin',

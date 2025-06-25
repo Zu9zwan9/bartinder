@@ -51,51 +51,61 @@ class Message extends Equatable {
       event: json['event']?.toString(),
       content: json['content']?.toString(),
       payload: json['payload'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(json['created_at']?.toString() ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['created_at']?.toString() ?? DateTime.now().toIso8601String(),
+      ),
       updatedAt: (json['updated_at'] != null)
           ? DateTime.parse(json['updated_at']?.toString() ?? '')
-          : DateTime.parse(json['created_at']?.toString() ?? DateTime.now().toIso8601String()),
+          : DateTime.parse(
+              json['created_at']?.toString() ??
+                  DateTime.now().toIso8601String(),
+            ),
       insertedAt: (json['inserted_at'] != null)
           ? DateTime.parse(json['inserted_at']?.toString() ?? '')
-          : DateTime.parse(json['created_at']?.toString() ?? DateTime.now().toIso8601String()),
-      sentAt: json['sent_at'] != null ? DateTime.parse(json['sent_at']?.toString() ?? '') : null,
+          : DateTime.parse(
+              json['created_at']?.toString() ??
+                  DateTime.now().toIso8601String(),
+            ),
+      sentAt: json['sent_at'] != null
+          ? DateTime.parse(json['sent_at']?.toString() ?? '')
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'match_id': matchId,
-        'sender_id': senderId,
-        'receiver_id': receiverId,
-        'text': text,
-        'media_url': mediaUrl,
-        'topic': topic,
-        'extension': extension,
-        'event': event,
-        'content': content,
-        'payload': payload,
-        'created_at': createdAt.toIso8601String(),
-        'updated_at': updatedAt.toIso8601String(),
-        'inserted_at': insertedAt.toIso8601String(),
-        'sent_at': sentAt?.toIso8601String(),
-      };
+    'id': id,
+    'match_id': matchId,
+    'sender_id': senderId,
+    'receiver_id': receiverId,
+    'text': text,
+    'media_url': mediaUrl,
+    'topic': topic,
+    'extension': extension,
+    'event': event,
+    'content': content,
+    'payload': payload,
+    'created_at': createdAt.toIso8601String(),
+    'updated_at': updatedAt.toIso8601String(),
+    'inserted_at': insertedAt.toIso8601String(),
+    'sent_at': sentAt?.toIso8601String(),
+  };
 
   @override
   List<Object?> get props => [
-        id,
-        matchId,
-        senderId,
-        receiverId,
-        text,
-        mediaUrl,
-        topic,
-        extension,
-        event,
-        content,
-        payload,
-        createdAt,
-        updatedAt,
-        insertedAt,
-        sentAt,
-      ];
+    id,
+    matchId,
+    senderId,
+    receiverId,
+    text,
+    mediaUrl,
+    topic,
+    extension,
+    event,
+    content,
+    payload,
+    createdAt,
+    updatedAt,
+    insertedAt,
+    sentAt,
+  ];
 }

@@ -45,10 +45,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: CupertinoPageScaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         navigationBar: CupertinoNavigationBar(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor ??
+          backgroundColor:
+              Theme.of(context).appBarTheme.backgroundColor ??
               Theme.of(context).scaffoldBackgroundColor,
           middle: Text(
-            'Beer Tinder',
+            'SipSwipe',
             style: TextStyle(
               color: Theme.of(context).textTheme.titleLarge?.color,
               fontWeight: FontWeight.bold,
@@ -75,8 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     'Error: ${state.message}',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 );
               }
@@ -104,8 +105,11 @@ class _HomeScreenState extends State<HomeScreen> {
     const actionAreaHeight = 100.0;
 
     // Calculate card area height with more conservative values to ensure buttons are visible
-    final availableHeight = screenHeight - navBarHeight - statusBarHeight - bottomPadding;
-    final cardAreaHeight = availableHeight * 0.75; // Reduced by 30% from original 0.8 (0.8 * 0.7 = 0.56)
+    final availableHeight =
+        screenHeight - navBarHeight - statusBarHeight - bottomPadding;
+    final cardAreaHeight =
+        availableHeight *
+        0.75; // Reduced by 30% from original 0.8 (0.8 * 0.7 = 0.56)
 
     return Stack(
       children: [
@@ -123,24 +127,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   cardsCount: count,
                   onSwipe: hasUsers
                       ? (prev, curr, direction) {
-                    final user = users[prev];
-                    _userSwipeBloc.add(
-                      direction == CardSwiperDirection.right
-                          ? LikeUser(user)
-                          : DislikeUser(user),
-                    );
-                    return true;
-                  }
+                          final user = users[prev];
+                          _userSwipeBloc.add(
+                            direction == CardSwiperDirection.right
+                                ? LikeUser(user)
+                                : DislikeUser(user),
+                          );
+                          return true;
+                        }
                       : (index, secondIndex, direction) => false,
                   numberOfCardsDisplayed: math.min(3, count),
                   backCardOffset: const Offset(20, 20),
                   padding: const EdgeInsets.all(16),
-                  cardBuilder: (context, index, horizontalOffset, verticalOffset) {
-                    if (!hasUsers) {
-                      return _buildNoMoreCard();
-                    }
-                    return UserCard(user: users[index]);
-                  },
+                  cardBuilder:
+                      (context, index, horizontalOffset, verticalOffset) {
+                        if (!hasUsers) {
+                          return _buildNoMoreCard();
+                        }
+                        return UserCard(user: users[index]);
+                      },
                 ),
               ),
             ),
@@ -155,7 +160,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Action area positioned below the cards
         Positioned(
-          bottom: bottomPadding + 45, // Position higher with more padding from bottom
+          bottom:
+              bottomPadding +
+              45, // Position higher with more padding from bottom
           left: 0,
           right: 0,
           child: Container(
@@ -182,7 +189,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 const SizedBox(width: 32), // Consistent space between buttons
-
                 // Like button (right)
                 Expanded(
                   child: _buildActionButton(
@@ -236,8 +242,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'Pull to refresh',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
+                color: Theme.of(context).colorScheme.secondary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

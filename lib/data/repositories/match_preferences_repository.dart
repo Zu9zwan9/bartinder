@@ -5,7 +5,7 @@ class MatchPreferencesRepository {
   final SupabaseClient supabase;
 
   MatchPreferencesRepository({SupabaseClient? supabase})
-      : supabase = supabase ?? Supabase.instance.client;
+    : supabase = supabase ?? Supabase.instance.client;
 
   /// Get user's match preferences
   Future<MatchPreferences?> getMatchPreferences(String userId) async {
@@ -21,7 +21,9 @@ class MatchPreferencesRepository {
         maxDistanceKm: response['max_distance_km'] ?? 25,
         ageRange: List<int>.from(response['age_range'] ?? [18, 65]),
         showMeInCityOnly: response['show_me_in_city_only'] ?? false,
-        genderPreference: List<String>.from(response['gender_preference'] ?? []),
+        genderPreference: List<String>.from(
+          response['gender_preference'] ?? [],
+        ),
         beerTypes: List<String>.from(response['beer_types'] ?? []),
       );
     } catch (e) {
@@ -51,41 +53,36 @@ class MatchPreferencesRepository {
 
   /// Update only the distance preference
   Future<void> updateMaxDistance(String userId, int maxDistanceKm) async {
-    await supabase
-        .from('match_preferences')
-        .upsert({
-          'user_id': userId,
-          'max_distance_km': maxDistanceKm,
-        });
+    await supabase.from('match_preferences').upsert({
+      'user_id': userId,
+      'max_distance_km': maxDistanceKm,
+    });
   }
 
   /// Update age range preference
   Future<void> updateAgeRange(String userId, List<int> ageRange) async {
-    await supabase
-        .from('match_preferences')
-        .upsert({
-          'user_id': userId,
-          'age_range': ageRange,
-        });
+    await supabase.from('match_preferences').upsert({
+      'user_id': userId,
+      'age_range': ageRange,
+    });
   }
 
   /// Update gender preferences
-  Future<void> updateGenderPreference(String userId, List<String> genderPreference) async {
-    await supabase
-        .from('match_preferences')
-        .upsert({
-          'user_id': userId,
-          'gender_preference': genderPreference,
-        });
+  Future<void> updateGenderPreference(
+    String userId,
+    List<String> genderPreference,
+  ) async {
+    await supabase.from('match_preferences').upsert({
+      'user_id': userId,
+      'gender_preference': genderPreference,
+    });
   }
 
   /// Update beer type preferences
   Future<void> updateBeerTypes(String userId, List<String> beerTypes) async {
-    await supabase
-        .from('match_preferences')
-        .upsert({
-          'user_id': userId,
-          'beer_types': beerTypes,
-        });
+    await supabase.from('match_preferences').upsert({
+      'user_id': userId,
+      'beer_types': beerTypes,
+    });
   }
 }

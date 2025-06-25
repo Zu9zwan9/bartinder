@@ -16,8 +16,9 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ChatBloc.withDefaultDependencies(matchedUser.id)
-        ..add(const LoadMessages()),
+      create: (context) =>
+          ChatBloc.withDefaultDependencies(matchedUser.id)
+            ..add(const LoadMessages()),
       child: _ChatScreenContent(matchedUser: matchedUser),
     );
   }
@@ -49,9 +50,7 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           widget.matchedUser.name,
-          style: AppTheme.navTitle.copyWith(
-            color: AppTheme.textColor(context),
-          ),
+          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
         ),
         previousPageTitle: 'Back',
         backgroundColor: AppTheme.isDarkMode(context)
@@ -85,55 +84,58 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                   } else if (state is ChatLoaded) {
                     final messages = state.messages;
                     return messages.isEmpty
-                      ? Center(
-                          child: Text(
-                            'Start a conversation!',
-                            style: AppTheme.bodyStyle.copyWith(
-                              color: AppTheme.secondaryTextColor(context),
+                        ? Center(
+                            child: Text(
+                              'Start a conversation!',
+                              style: AppTheme.bodyStyle.copyWith(
+                                color: AppTheme.secondaryTextColor(context),
+                              ),
                             ),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          itemCount: messages.length,
-                          reverse: false,
-                          itemBuilder: (context, index) {
-                            final message = messages[index];
-                            final isMe = message.senderId == AuthService.currentUserId;
-                            return Align(
-                              alignment: isMe
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isMe
-                                      ? AppTheme.systemBlue(context)
-                                      : AppTheme.isDarkMode(context)
-                                          ? AppTheme.systemGray4(context)
-                                          : AppTheme.systemGray5(context),
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child: Text(
-                                  message.text ?? message.content ?? '',
-                                  style: AppTheme.bodyStyle.copyWith(
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            itemCount: messages.length,
+                            reverse: false,
+                            itemBuilder: (context, index) {
+                              final message = messages[index];
+                              final isMe =
+                                  message.senderId == AuthService.currentUserId;
+                              return Align(
+                                alignment: isMe
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
                                     color: isMe
-                                        ? Colors.white
-                                        : AppTheme.textColor(context),
-                                    decoration: TextDecoration.none,
+                                        ? AppTheme.systemBlue(context)
+                                        : AppTheme.isDarkMode(context)
+                                        ? AppTheme.systemGray4(context)
+                                        : AppTheme.systemGray5(context),
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  child: Text(
+                                    message.text ?? message.content ?? '',
+                                    style: AppTheme.bodyStyle.copyWith(
+                                      color: isMe
+                                          ? Colors.white
+                                          : AppTheme.textColor(context),
+                                      decoration: TextDecoration.none,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
+                              );
+                            },
+                          );
                   }
                   return Center(
                     child: Text(

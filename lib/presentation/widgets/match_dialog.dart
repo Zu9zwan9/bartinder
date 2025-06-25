@@ -62,22 +62,24 @@ class MatchDialog extends StatelessWidget {
 
             // User photo
             // Avatar with fallback if no photo URL provided
-            Builder(builder: (context) {
-              final url = matchedUser.photoUrl;
-              final hasPhoto = url.isNotEmpty;
-              return CircleAvatar(
-                radius: 60,
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-                backgroundImage: hasPhoto ? NetworkImage(url) : null,
-                child: hasPhoto
-                    ? null
-                    : Icon(
-                        CupertinoIcons.person_fill,
-                        size: 60,
-                        color: AppTheme.primaryColor,
-                      ),
-              );
-            }),
+            Builder(
+              builder: (context) {
+                final url = matchedUser.photoUrl;
+                final hasPhoto = url.isNotEmpty;
+                return CircleAvatar(
+                  radius: 60,
+                  backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+                  backgroundImage: hasPhoto ? NetworkImage(url) : null,
+                  child: hasPhoto
+                      ? null
+                      : Icon(
+                          CupertinoIcons.person_fill,
+                          size: 60,
+                          color: AppTheme.primaryColor,
+                        ),
+                );
+              },
+            ),
             const SizedBox(height: 16),
 
             // User name and info
@@ -91,9 +93,7 @@ class MatchDialog extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Loves ${matchedUser.favoriteBeer}',
-              style: AppTheme.bodyStyle.copyWith(
-                color: Colors.white,
-              ),
+              style: AppTheme.bodyStyle.copyWith(color: Colors.white),
             ),
 
             if (matchedUser.lastCheckedInLocation != null)
@@ -101,9 +101,7 @@ class MatchDialog extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
                   'Last seen at ${matchedUser.lastCheckedInLocation}',
-                  style: AppTheme.bodyStyle.copyWith(
-                    color: Colors.white,
-                  ),
+                  style: AppTheme.bodyStyle.copyWith(color: Colors.white),
                 ),
               ),
 
@@ -116,7 +114,10 @@ class MatchDialog extends StatelessWidget {
                 // Message button
                 if (onMessage != null)
                   CupertinoButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     color: AppTheme.primaryColor,
                     onPressed: onMessage,
                     child: const Text(
@@ -132,7 +133,10 @@ class MatchDialog extends StatelessWidget {
 
                 // Continue button
                 CupertinoButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   color: Colors.white,
                   onPressed: onContinue,
                   child: Text(

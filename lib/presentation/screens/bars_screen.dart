@@ -27,8 +27,7 @@ class _BarsScreenState extends State<BarsScreen> {
   @override
   void initState() {
     super.initState();
-    _barsBloc = BarsBloc.withDefaultDependencies()
-      ..add(const LoadBars());
+    _barsBloc = BarsBloc.withDefaultDependencies()..add(const LoadBars());
   }
 
   @override
@@ -56,10 +55,7 @@ class _BarsScreenState extends State<BarsScreen> {
           ),
           trailing: CupertinoButton(
             padding: EdgeInsets.zero,
-            child: Icon(
-              CupertinoIcons.refresh,
-              color: AppTheme.primaryColor,
-            ),
+            child: Icon(CupertinoIcons.refresh, color: AppTheme.primaryColor),
             onPressed: () => _barsBloc.add(const RefreshBars()),
           ),
           border: null, // Remove border to reduce space
@@ -129,12 +125,16 @@ class _BarsScreenState extends State<BarsScreen> {
     const actionAreaHeight = 100.0;
 
     // Calculate the space needed for the heading users section
-    final bool hasHeadingUsers = bars.isNotEmpty && bars[0].usersHeadingThere.isNotEmpty;
+    final bool hasHeadingUsers =
+        bars.isNotEmpty && bars[0].usersHeadingThere.isNotEmpty;
     final headingUsersHeight = hasHeadingUsers ? 80.0 : 0.0;
 
     // Calculate card area height with more conservative values
-    final availableHeight = screenHeight - navBarHeight - statusBarHeight - bottomPadding;
-    final cardAreaHeight = (availableHeight * 0.8) - headingUsersHeight; // 80% of available height minus heading
+    final availableHeight =
+        screenHeight - navBarHeight - statusBarHeight - bottomPadding;
+    final cardAreaHeight =
+        (availableHeight * 0.8) -
+        headingUsersHeight; // 80% of available height minus heading
 
     return Stack(
       children: [
@@ -161,12 +161,14 @@ class _BarsScreenState extends State<BarsScreen> {
                   numberOfCardsDisplayed: 3,
                   backCardOffset: const Offset(20, 20),
                   padding: const EdgeInsets.all(16),
-                  cardBuilder: (context, index, horizontalOffset, verticalOffset) {
-                    return BarCard(
-                      bar: bars[index],
-                      onTap: () => _barsBloc.add(ViewBarDetails(bars[index].id)),
-                    );
-                  },
+                  cardBuilder:
+                      (context, index, horizontalOffset, verticalOffset) {
+                        return BarCard(
+                          bar: bars[index],
+                          onTap: () =>
+                              _barsBloc.add(ViewBarDetails(bars[index].id)),
+                        );
+                      },
                 ),
               ),
             ),
@@ -193,7 +195,9 @@ class _BarsScreenState extends State<BarsScreen> {
                       const SizedBox(height: 4),
                       SizedBox(
                         height: 54, // Reduced height to fit properly
-                        child: HeadingUsersList(userIds: bars[0].usersHeadingThere),
+                        child: HeadingUsersList(
+                          userIds: bars[0].usersHeadingThere,
+                        ),
                       ),
                     ],
                   ),
@@ -223,18 +227,21 @@ class _BarsScreenState extends State<BarsScreen> {
                   child: _buildActionButton(
                     icon: CupertinoIcons.xmark_circle_fill,
                     color: AppTheme.errorColor(context),
-                    onTap: () => _cardController.swipe(CardSwiperDirection.left),
+                    onTap: () =>
+                        _cardController.swipe(CardSwiperDirection.left),
                   ),
                 ),
 
-                const SizedBox(width: 32), // Same space as HomeScreen for consistency
-
+                const SizedBox(
+                  width: 32,
+                ), // Same space as HomeScreen for consistency
                 // Like button
                 Expanded(
                   child: _buildActionButton(
                     icon: CupertinoIcons.heart_fill,
                     color: AppTheme.successColor(context),
-                    onTap: () => _cardController.swipe(CardSwiperDirection.right),
+                    onTap: () =>
+                        _cardController.swipe(CardSwiperDirection.right),
                   ),
                 ),
               ],
@@ -270,11 +277,7 @@ class _BarsScreenState extends State<BarsScreen> {
               ),
             ],
           ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 36,
-          ),
+          child: Icon(icon, color: color, size: 36),
         ),
       ),
     );
@@ -311,9 +314,7 @@ class _BarsScreenState extends State<BarsScreen> {
             onPressed: () => _barsBloc.add(const RefreshBars()),
             child: Text(
               'Refresh',
-              style: AppTheme.buttonStyle.copyWith(
-                color: Colors.white,
-              ),
+              style: AppTheme.buttonStyle.copyWith(color: Colors.white),
             ),
           ),
         ],

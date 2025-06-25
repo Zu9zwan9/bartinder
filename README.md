@@ -1,13 +1,13 @@
 markdown
-# BeerTinder 🍺
+# SipSwipe 🍺
 
 A Flutter application for beer enthusiasts to discover and rate their favorite brews with a familiar swipe interface.
 
-![BeerTinder Banner](https://via.placeholder.com/800x200/FFB900/000000?text=BeerTinder)
+![SipSwipe Banner](https://via.placeholder.com/800x200/FFB900/000000?text=BeerTinder)
 
 ## 📝 Description
 
-BeerTinder is a mobile application that helps users discover new beers based on their preferences. Users can swipe right on beers they want to try and left on those they want to skip. The app learns from user preferences to suggest better matches over time.
+SipSwipe is a mobile application that helps users discover new beers based on their preferences. Users can swipe right on beers they want to try and left on those they want to skip. The app learns from user preferences to suggest better matches over time.
 
 ## ✨ Features
 
