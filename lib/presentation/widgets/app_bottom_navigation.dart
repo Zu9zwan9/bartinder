@@ -22,10 +22,7 @@ class AppBottomNavigation extends StatelessWidget {
       inactiveColor: AppTheme.secondaryTextColor(context),
       backgroundColor: AppTheme.cardColor(context),
       border: const Border(
-        top: BorderSide(
-          color: CupertinoColors.systemGrey5,
-          width: 0.5,
-        ),
+        top: BorderSide(color: CupertinoColors.systemGrey5, width: 0.5),
       ),
       items: const [
         BottomNavigationBarItem(

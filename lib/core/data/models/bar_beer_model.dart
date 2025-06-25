@@ -12,9 +12,6 @@ class BarBeerModel {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'bar_id': barId,
-      'beer_id': beerId,
-    };
+    return {'bar_id': barId, 'beer_id': beerId};
   }
 }

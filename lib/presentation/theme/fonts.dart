@@ -28,7 +28,11 @@ class AppFonts {
   static const double looseLineHeight = 1.5;
 
   // Text styles for dynamic type
-  static TextStyle largeTitle({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle largeTitle({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProDisplay,
       fontSize: 34,
@@ -40,7 +44,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle title1({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle title1({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProDisplay,
       fontSize: 28,
@@ -52,7 +60,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle title2({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle title2({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProDisplay,
       fontSize: 22,
@@ -64,7 +76,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle title3({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle title3({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProDisplay,
       fontSize: 20,
@@ -76,7 +92,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle headline({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle headline({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 17,
@@ -88,7 +108,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle body({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle body({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 17,
@@ -100,7 +124,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle callout({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle callout({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 16,
@@ -112,7 +140,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle subhead({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle subhead({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 15,
@@ -124,7 +156,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle footnote({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle footnote({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 13,
@@ -136,7 +172,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle caption1({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle caption1({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 12,
@@ -148,7 +188,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle caption2({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle caption2({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 11,
@@ -161,7 +205,11 @@ class AppFonts {
   }
 
   // Special text styles
-  static TextStyle button({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle button({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 17,
@@ -173,7 +221,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle navTitle({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle navTitle({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProDisplay,
       fontSize: 17,
@@ -185,7 +237,11 @@ class AppFonts {
     );
   }
 
-  static TextStyle tabBar({Color? color, FontWeight? weight, double? letterSpacing}) {
+  static TextStyle tabBar({
+    Color? color,
+    FontWeight? weight,
+    double? letterSpacing,
+  }) {
     return TextStyle(
       fontFamily: sfProText,
       fontSize: 10,

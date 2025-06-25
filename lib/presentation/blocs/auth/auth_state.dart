@@ -23,9 +23,7 @@ class AuthLoading extends AuthState {
 class AuthAuthenticated extends AuthState {
   final User user;
 
-  const AuthAuthenticated({
-    required this.user,
-  });
+  const AuthAuthenticated({required this.user});
 
   @override
   List<Object?> get props => [user.id];
@@ -40,9 +38,7 @@ class AuthUnauthenticated extends AuthState {
 class AuthInProgress extends AuthState {
   final String operation;
 
-  const AuthInProgress({
-    required this.operation,
-  });
+  const AuthInProgress({required this.operation});
 
   @override
   List<Object?> get props => [operation];
@@ -53,10 +49,7 @@ class AuthSuccess extends AuthState {
   final String message;
   final User? user;
 
-  const AuthSuccess({
-    required this.message,
-    this.user,
-  });
+  const AuthSuccess({required this.message, this.user});
 
   @override
   List<Object?> get props => [message, user?.id];
@@ -67,10 +60,7 @@ class AuthFailure extends AuthState {
   final String error;
   final String? code;
 
-  const AuthFailure({
-    required this.error,
-    this.code,
-  });
+  const AuthFailure({required this.error, this.code});
 
   @override
   List<Object?> get props => [error, code];
@@ -80,9 +70,7 @@ class AuthFailure extends AuthState {
 class AuthPasswordResetSent extends AuthState {
   final String email;
 
-  const AuthPasswordResetSent({
-    required this.email,
-  });
+  const AuthPasswordResetSent({required this.email});
 
   @override
   List<Object?> get props => [email];
@@ -92,9 +80,7 @@ class AuthPasswordResetSent extends AuthState {
 class AuthEmailVerificationRequired extends AuthState {
   final String email;
 
-  const AuthEmailVerificationRequired({
-    required this.email,
-  });
+  const AuthEmailVerificationRequired({required this.email});
 
   @override
   List<Object?> get props => [email];

@@ -37,11 +37,11 @@ class _SignInScreenState extends State<SignInScreen> {
   void _signIn() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthSignInRequested(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+        AuthSignInRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 
@@ -72,9 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Sign In',
-          style: AppTheme.navTitle.copyWith(
-            color: AppTheme.textColor(context),
-          ),
+          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
         ),
         backgroundColor: AppTheme.isDarkMode(context)
             ? AppTheme.darkCardColor
@@ -105,7 +103,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Beer Tinder',
+                    'SipSwipe',
                     style: AppTheme.largeTitle.copyWith(
                       color: AppTheme.textColor(context),
                       fontWeight: FontWeight.bold,
@@ -132,7 +130,10 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           child: Row(
                             children: [
                               Icon(
@@ -172,7 +173,10 @@ class _SignInScreenState extends State<SignInScreen> {
                           color: AppTheme.dividerColor(context),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           child: Row(
                             children: [
                               Icon(
@@ -230,9 +234,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     onPressed: _signIn,
                     child: Text(
                       'Sign In',
-                      style: AppTheme.button.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: AppTheme.button.copyWith(color: Colors.white),
                     ),
                   ),
 

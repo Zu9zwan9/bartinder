@@ -38,11 +38,11 @@ class MatchPreferences extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        maxDistanceKm,
-        ageRange,
-        showMeInCityOnly,
-        genderPreference,
-        beerTypes,
-      ];
+    userId,
+    maxDistanceKm,
+    ageRange,
+    showMeInCityOnly,
+    genderPreference,
+    beerTypes,
+  ];
 }

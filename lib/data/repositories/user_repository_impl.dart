@@ -10,7 +10,7 @@ class UserRepositoryImpl implements UserRepository {
   final MockUserDataSource _dataSource;
 
   UserRepositoryImpl({MockUserDataSource? dataSource})
-      : _dataSource = dataSource ?? MockUserDataSource();
+    : _dataSource = dataSource ?? MockUserDataSource();
 
   @override
   Future<List<app_user.User>> getUsers() async {
@@ -18,22 +18,26 @@ class UserRepositoryImpl implements UserRepository {
     final response = await supabase.from('users').select().limit(100);
     List data = [];
     data = response;
-      if (data.isNotEmpty) {
-      final users = data.map((item) => app_user.User(
-        id: item['id']?.toString() ?? '',
-        name: item['name'] ?? '',
-        age: int.tryParse(item['age']?.toString() ?? '') ?? 0,
-        photoUrl: item['photoUrl'] ?? '',
-        favoriteBeer: item['favoriteBeer'] ?? '',
-        bio: item['bio'],
-        lastCheckedInLocation: item['lastCheckedInLocation'],
-        lastCheckedInDistance: (item['lastCheckedInDistance'] is num)
-            ? (item['lastCheckedInDistance'] as num).toDouble()
-            : null,
-        beerPreferences: (item['beerPreferences'] is List)
-            ? List<String>.from(item['beerPreferences'])
-            : [],
-      )).toList();
+    if (data.isNotEmpty) {
+      final users = data
+          .map(
+            (item) => app_user.User(
+              id: item['id']?.toString() ?? '',
+              name: item['name'] ?? '',
+              age: int.tryParse(item['age']?.toString() ?? '') ?? 0,
+              photoUrl: item['photoUrl'] ?? '',
+              favoriteBeer: item['favoriteBeer'] ?? '',
+              bio: item['bio'],
+              lastCheckedInLocation: item['lastCheckedInLocation'],
+              lastCheckedInDistance: (item['lastCheckedInDistance'] is num)
+                  ? (item['lastCheckedInDistance'] as num).toDouble()
+                  : null,
+              beerPreferences: (item['beerPreferences'] is List)
+                  ? List<String>.from(item['beerPreferences'])
+                  : [],
+            ),
+          )
+          .toList();
       return users;
     }
     return _dataSource.getUsers();
@@ -131,21 +135,25 @@ class UserRepositoryImpl implements UserRepository {
     final supabase = Supabase.instance.client;
     final response = await supabase.from('users').select();
     if (response.isNotEmpty) {
-      return response.map((item) => app_user.User(
-        id: item['id']?.toString() ?? '',
-        name: item['name'] ?? '',
-        age: int.tryParse(item['age']?.toString() ?? '') ?? 0,
-        photoUrl: item['photoUrl'] ?? '',
-        favoriteBeer: item['favoriteBeer'] ?? '',
-        bio: item['bio'],
-        lastCheckedInLocation: item['lastCheckedInLocation'],
-        lastCheckedInDistance: (item['lastCheckedInDistance'] is num)
-            ? (item['lastCheckedInDistance'] as num).toDouble()
-            : null,
-        beerPreferences: (item['beerPreferences'] is List)
-            ? List<String>.from(item['beerPreferences'])
-            : [],
-      )).toList();
+      return response
+          .map(
+            (item) => app_user.User(
+              id: item['id']?.toString() ?? '',
+              name: item['name'] ?? '',
+              age: int.tryParse(item['age']?.toString() ?? '') ?? 0,
+              photoUrl: item['photoUrl'] ?? '',
+              favoriteBeer: item['favoriteBeer'] ?? '',
+              bio: item['bio'],
+              lastCheckedInLocation: item['lastCheckedInLocation'],
+              lastCheckedInDistance: (item['lastCheckedInDistance'] is num)
+                  ? (item['lastCheckedInDistance'] as num).toDouble()
+                  : null,
+              beerPreferences: (item['beerPreferences'] is List)
+                  ? List<String>.from(item['beerPreferences'])
+                  : [],
+            ),
+          )
+          .toList();
     }
     return [];
   }

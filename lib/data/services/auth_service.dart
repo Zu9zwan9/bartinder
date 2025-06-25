@@ -9,10 +9,7 @@ class AuthException implements Exception {
   final String code;
   final String message;
 
-  const AuthException({
-    required this.code,
-    required this.message,
-  });
+  const AuthException({required this.code, required this.message});
 
   @override
   String toString() => 'AuthException: $code - $message';
@@ -24,21 +21,13 @@ class AuthResult<T> {
   final AuthException? error;
   final bool isSuccess;
 
-  const AuthResult._({
-    this.data,
-    this.error,
-    required this.isSuccess,
-  });
+  const AuthResult._({this.data, this.error, required this.isSuccess});
 
-  factory AuthResult.success(T data) => AuthResult._(
-        data: data,
-        isSuccess: true,
-      );
+  factory AuthResult.success(T data) =>
+      AuthResult._(data: data, isSuccess: true);
 
-  factory AuthResult.failure(AuthException error) => AuthResult._(
-        error: error,
-        isSuccess: false,
-      );
+  factory AuthResult.failure(AuthException error) =>
+      AuthResult._(error: error, isSuccess: false);
 }
 
 /// Production-ready Supabase authentication service
@@ -81,44 +70,46 @@ class AuthService {
     try {
       final user = currentUser;
       if (user == null) {
-        return AuthResult.failure(const AuthException(
-          code: 'not_authenticated',
-          message: 'User not authenticated',
-        ));
+        return AuthResult.failure(
+          const AuthException(
+            code: 'not_authenticated',
+            message: 'User not authenticated',
+          ),
+        );
       }
 
       final response = await _supabase.auth.updateUser(
-        UserAttributes(
-          data: {
-            ...?user.userMetadata,
-            'avatar_url': avatarUrl,
-          },
-        ),
+        UserAttributes(data: {...?user.userMetadata, 'avatar_url': avatarUrl}),
       );
 
       if (response.user != null) {
         // Persist avatar_url in users table
-        await _supabase.from('users').update({
-          'avatar_url': avatarUrl,
-        }).eq('id', user.id);
+        await _supabase
+            .from('users')
+            .update({'avatar_url': avatarUrl})
+            .eq('id', user.id);
         if (kDebugMode) {
           print('Avatar updated successfully: $avatarUrl');
         }
         return AuthResult.success(response.user!);
       } else {
-        return AuthResult.failure(const AuthException(
-          code: 'update_failed',
-          message: 'Failed to update avatar',
-        ));
+        return AuthResult.failure(
+          const AuthException(
+            code: 'update_failed',
+            message: 'Failed to update avatar',
+          ),
+        );
       }
     } catch (e) {
       if (kDebugMode) {
         print('Avatar update error: $e');
       }
-      return AuthResult.failure(AuthException(
-        code: 'unknown_error',
-        message: 'An unexpected error occurred: $e',
-      ));
+      return AuthResult.failure(
+        AuthException(
+          code: 'unknown_error',
+          message: 'An unexpected error occurred: $e',
+        ),
+      );
     }
   }
 
@@ -127,15 +118,18 @@ class AuthService {
     try {
       final user = currentUser;
       if (user == null) {
-        return AuthResult.failure(const AuthException(
-          code: 'not_authenticated',
-          message: 'User not authenticated',
-        ));
+        return AuthResult.failure(
+          const AuthException(
+            code: 'not_authenticated',
+            message: 'User not authenticated',
+          ),
+        );
       }
       // Generate external avatar URL
       final externalUrl = generateRandomAvatar();
       // Define storage path
-      final path = 'images/${user.id}/${DateTime.now().millisecondsSinceEpoch}.svg';
+      final path =
+          'images/${user.id}/${DateTime.now().millisecondsSinceEpoch}.svg';
       // Upload and get signed URL
       final storageUrl = await StorageService.uploadFromUrl(externalUrl, path);
       // Update avatar metadata and users table
@@ -144,10 +138,12 @@ class AuthService {
       if (kDebugMode) {
         print('uploadRandomAvatar error: $e');
       }
-      return AuthResult.failure(AuthException(
-        code: 'avatar_upload_failed',
-        message: 'Failed to upload and set avatar: $e',
-      ));
+      return AuthResult.failure(
+        AuthException(
+          code: 'avatar_upload_failed',
+          message: 'Failed to upload and set avatar: $e',
+        ),
+      );
     }
   }
 
@@ -164,10 +160,7 @@ class AuthService {
 
       // Generate random avatar and add to metadata
       final avatarUrl = generateRandomAvatar();
-      final enrichedMetadata = {
-        ...?metadata,
-        'avatar_url': avatarUrl,
-      };
+      final enrichedMetadata = {...?metadata, 'avatar_url': avatarUrl};
 
       if (kDebugMode) {
         print('Generated avatar URL: $avatarUrl');
@@ -187,7 +180,9 @@ class AuthService {
         await _supabase.from('users').upsert({
           'id': response.user!.id,
           'email': response.user!.email,
-          'name': enrichedMetadata['name'] ?? response.user!.email?.split('@').first,
+          'name':
+              enrichedMetadata['name'] ??
+              response.user!.email?.split('@').first,
           'password_hash': '',
           'avatar_url': avatarUrl,
         });
@@ -241,9 +236,12 @@ class AuthService {
         await _supabase.from('users').upsert({
           'id': response.user!.id,
           'email': response.user!.email,
-          'name': (response.user!.userMetadata?['name'] as String?) ?? response.user!.email!.split('@').first,
+          'name':
+              (response.user!.userMetadata?['name'] as String?) ??
+              response.user!.email!.split('@').first,
           'password_hash': '',
-          'avatar_url': response.user!.userMetadata?['avatar_url'] as String? ?? '',
+          'avatar_url':
+              response.user!.userMetadata?['avatar_url'] as String? ?? '',
         });
         return AuthResult.success(response.user!);
       } else {
@@ -290,18 +288,13 @@ class AuthService {
         print('Sign out failed: $e');
       }
       return AuthResult.failure(
-        AuthException(
-          code: 'signout_failed',
-          message: 'Sign out failed: $e',
-        ),
+        AuthException(code: 'signout_failed', message: 'Sign out failed: $e'),
       );
     }
   }
 
   /// Reset password for email
-  static Future<AuthResult<void>> resetPassword({
-    required String email,
-  }) async {
+  static Future<AuthResult<void>> resetPassword({required String email}) async {
     try {
       if (kDebugMode) {
         print('Attempting password reset for email: $email');

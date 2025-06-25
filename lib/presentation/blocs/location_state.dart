@@ -34,4 +34,3 @@ class LocationError extends LocationState {
   @override
   List<Object?> get props => [message];
 }
-

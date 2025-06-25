@@ -25,19 +25,13 @@ class UserSwipeLoaded extends UserSwipeState {
   final List<User> users;
   final List<String> matches;
 
-  const UserSwipeLoaded({
-    required this.users,
-    this.matches = const [],
-  });
+  const UserSwipeLoaded({required this.users, this.matches = const []});
 
   @override
   List<Object?> get props => [users, matches];
 
   /// Create a copy of this state with the given fields replaced
-  UserSwipeLoaded copyWith({
-    List<User>? users,
-    List<String>? matches,
-  }) {
+  UserSwipeLoaded copyWith({List<User>? users, List<String>? matches}) {
     return UserSwipeLoaded(
       users: users ?? this.users,
       matches: matches ?? this.matches,

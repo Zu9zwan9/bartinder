@@ -1,7 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-
-
 abstract class UserActionEvent extends Equatable {
   const UserActionEvent();
 
@@ -26,4 +24,3 @@ class DislikeUserEvent extends UserActionEvent {
   @override
   List<Object> get props => [userId];
 }
-

@@ -24,7 +24,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
   @override
   void initState() {
     super.initState();
-    _matchesBloc = MatchesBloc.withDefaultDependencies()..add(const LoadMatches());
+    _matchesBloc = MatchesBloc.withDefaultDependencies()
+      ..add(const LoadMatches());
   }
 
   @override
@@ -80,7 +81,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           ),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
-                      )
+                      ),
                     ],
                   ),
                 );
@@ -109,7 +110,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           ),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
-                      )
+                      ),
                     ],
                   ),
                 );
@@ -138,7 +139,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           ),
                         ),
                         onPressed: () => Navigator.of(context).pop(),
-                      )
+                      ),
                     ],
                   ),
                 );
@@ -189,60 +190,89 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       ),
                       child: Row(
                         children: [
-                          Builder(builder: (context) {
-                            final url = user.photoUrl;
-                            final hasPhoto = url.isNotEmpty;
-                            final isSvg = hasPhoto && url.toLowerCase().endsWith('.svg');
+                          Builder(
+                            builder: (context) {
+                              final url = user.photoUrl;
+                              final hasPhoto = url.isNotEmpty;
+                              final isSvg =
+                                  hasPhoto &&
+                                  url.toLowerCase().endsWith('.svg');
 
-                            return Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: AppTheme.isDarkMode(context)
-                                    ? AppTheme.systemGray4(context)
-                                    : AppTheme.systemGray5(context),
-                                shape: BoxShape.circle,
-                              ),
-                              child: hasPhoto
-                                  ? ClipRRect(
-                                borderRadius: BorderRadius.circular(24),
-                                child: isSvg
-                                    ? SvgPicture.network(
-                                  url,
-                                  fit: BoxFit.cover,
-                                  placeholderBuilder: (BuildContext context) => Center(
-                                    child: CupertinoActivityIndicator(
-                                      color: AppTheme.iconColor(context),
-                                    ),
-                                  ),
-                                )
-                                    : Image.network(
-                                  url,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CupertinoActivityIndicator(
+                              return Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.isDarkMode(context)
+                                      ? AppTheme.systemGray4(context)
+                                      : AppTheme.systemGray5(context),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: hasPhoto
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(24),
+                                        child: isSvg
+                                            ? SvgPicture.network(
+                                                url,
+                                                fit: BoxFit.cover,
+                                                placeholderBuilder:
+                                                    (
+                                                      BuildContext context,
+                                                    ) => Center(
+                                                      child: CupertinoActivityIndicator(
+                                                        color:
+                                                            AppTheme.iconColor(
+                                                              context,
+                                                            ),
+                                                      ),
+                                                    ),
+                                              )
+                                            : Image.network(
+                                                url,
+                                                fit: BoxFit.cover,
+                                                loadingBuilder:
+                                                    (
+                                                      context,
+                                                      child,
+                                                      loadingProgress,
+                                                    ) {
+                                                      if (loadingProgress ==
+                                                          null)
+                                                        return child;
+                                                      return Center(
+                                                        child: CupertinoActivityIndicator(
+                                                          color:
+                                                              AppTheme.iconColor(
+                                                                context,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) {
+                                                      return Icon(
+                                                        CupertinoIcons
+                                                            .person_fill,
+                                                        size: 24,
+                                                        color:
+                                                            AppTheme.iconColor(
+                                                              context,
+                                                            ),
+                                                      );
+                                                    },
+                                              ),
+                                      )
+                                    : Icon(
+                                        CupertinoIcons.person_fill,
+                                        size: 24,
                                         color: AppTheme.iconColor(context),
                                       ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      CupertinoIcons.person_fill,
-                                      size: 24,
-                                      color: AppTheme.iconColor(context),
-                                    );
-                                  },
-                                ),
-                              )
-                                  : Icon(
-                                CupertinoIcons.person_fill,
-                                size: 24,
-                                color: AppTheme.iconColor(context),
-                              ),
-                            );
-                          }),
+                              );
+                            },
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -287,7 +317,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
                               color: AppTheme.accentColor,
                               size: 26,
                             ),
-                            onPressed: () => _matchesBloc.add(InviteToBar(user.id, '1')),
+                            onPressed: () =>
+                                _matchesBloc.add(InviteToBar(user.id, '1')),
                           ),
                         ],
                       ),

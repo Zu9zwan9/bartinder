@@ -6,12 +6,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'storage_service.dart';
 import 'user_profile_service.dart';
 
-
 class AvatarService {
   static final SupabaseClient _supabase = Supabase.instance.client;
 
   /// Base URL for Dicebear API
-  static const String _dicebearBaseUrl = 'https://api.dicebear.com/6.x/notionists/svg';
+  static const String _dicebearBaseUrl =
+      'https://api.dicebear.com/6.x/notionists/svg';
 
   /// Generate a unique seed for avatar generation
   static String _generateSeed(String userId) {
@@ -54,10 +54,16 @@ class AvatarService {
       }
 
       // Download and store avatar
-      final storedUrl = await StorageService.uploadFromUrl(avatarUrl, storagePath);
+      final storedUrl = await StorageService.uploadFromUrl(
+        avatarUrl,
+        storagePath,
+      );
 
       // Update user profile with stored avatar URL
-      final updateSuccess = await UserProfileService.updateAvatarUrl(userId, storedUrl);
+      final updateSuccess = await UserProfileService.updateAvatarUrl(
+        userId,
+        storedUrl,
+      );
 
       if (updateSuccess) {
         if (kDebugMode) {
@@ -83,13 +89,15 @@ class AvatarService {
     try {
       // Generate new random seed
       final random = Random();
-      final newSeed = '${userId.substring(0, 8)}_${random.nextInt(999999)}_${DateTime.now().millisecondsSinceEpoch}';
+      final newSeed =
+          '${userId.substring(0, 8)}_${random.nextInt(999999)}_${DateTime.now().millisecondsSinceEpoch}';
 
       // Generate new avatar URL
       final avatarUrl = generateAvatarUrl(newSeed);
 
       // Create storage path with timestamp to avoid caching issues
-      final storagePath = 'images/$userId/avatar_${DateTime.now().millisecondsSinceEpoch}.svg';
+      final storagePath =
+          'images/$userId/avatar_${DateTime.now().millisecondsSinceEpoch}.svg';
 
       // Delete old avatar if exists
       final profile = await UserProfileService.fetchUserProfile(userId);
@@ -106,14 +114,22 @@ class AvatarService {
       }
 
       // Download and store new avatar
-      final storedUrl = await StorageService.uploadFromUrl(avatarUrl, storagePath);
+      final storedUrl = await StorageService.uploadFromUrl(
+        avatarUrl,
+        storagePath,
+      );
 
       // Update user profile with new avatar URL
-      final updateSuccess = await UserProfileService.updateAvatarUrl(userId, storedUrl);
+      final updateSuccess = await UserProfileService.updateAvatarUrl(
+        userId,
+        storedUrl,
+      );
 
       if (updateSuccess) {
         if (kDebugMode) {
-          print('Avatar successfully regenerated and profile updated: $storedUrl');
+          print(
+            'Avatar successfully regenerated and profile updated: $storedUrl',
+          );
         }
         return storedUrl;
       } else {
@@ -202,7 +218,10 @@ class AvatarService {
       final storedUrl = await StorageService.uploadFile(file, storagePath);
 
       // Update user profile
-      final success = await UserProfileService.updateAvatarUrl(userId, storedUrl);
+      final success = await UserProfileService.updateAvatarUrl(
+        userId,
+        storedUrl,
+      );
       return success ? storedUrl : null;
     } catch (e) {
       if (kDebugMode) {

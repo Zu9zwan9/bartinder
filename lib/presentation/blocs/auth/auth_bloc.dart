@@ -64,10 +64,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final result = await AuthService.signUp(
         email: event.email,
         password: event.password,
-        metadata: {
-          'name': event.name,
-          'age': event.age,
-        },
+        metadata: {'name': event.name, 'age': event.age},
       );
 
       if (result.isSuccess && result.data != null) {
@@ -78,19 +75,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthAuthenticated(user: result.data!));
         }
       } else {
-        emit(AuthFailure(
-          error: result.error?.message ?? 'Sign up failed',
-          code: result.error?.code,
-        ));
+        emit(
+          AuthFailure(
+            error: result.error?.message ?? 'Sign up failed',
+            code: result.error?.code,
+          ),
+        );
       }
     } catch (e) {
       if (kDebugMode) {
         print('Sign up error: $e');
       }
-      emit(AuthFailure(
-        error: 'An unexpected error occurred during sign up',
-        code: 'unknown_error',
-      ));
+      emit(
+        AuthFailure(
+          error: 'An unexpected error occurred during sign up',
+          code: 'unknown_error',
+        ),
+      );
     }
   }
 
@@ -110,19 +111,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (result.isSuccess && result.data != null) {
         emit(AuthAuthenticated(user: result.data!));
       } else {
-        emit(AuthFailure(
-          error: result.error?.message ?? 'Sign in failed',
-          code: result.error?.code,
-        ));
+        emit(
+          AuthFailure(
+            error: result.error?.message ?? 'Sign in failed',
+            code: result.error?.code,
+          ),
+        );
       }
     } catch (e) {
       if (kDebugMode) {
         print('Sign in error: $e');
       }
-      emit(AuthFailure(
-        error: 'An unexpected error occurred during sign in',
-        code: 'unknown_error',
-      ));
+      emit(
+        AuthFailure(
+          error: 'An unexpected error occurred during sign in',
+          code: 'unknown_error',
+        ),
+      );
     }
   }
 
@@ -139,19 +144,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (result.isSuccess) {
         emit(const AuthUnauthenticated());
       } else {
-        emit(AuthFailure(
-          error: result.error?.message ?? 'Sign out failed',
-          code: result.error?.code,
-        ));
+        emit(
+          AuthFailure(
+            error: result.error?.message ?? 'Sign out failed',
+            code: result.error?.code,
+          ),
+        );
       }
     } catch (e) {
       if (kDebugMode) {
         print('Sign out error: $e');
       }
-      emit(AuthFailure(
-        error: 'An unexpected error occurred during sign out',
-        code: 'unknown_error',
-      ));
+      emit(
+        AuthFailure(
+          error: 'An unexpected error occurred during sign out',
+          code: 'unknown_error',
+        ),
+      );
     }
   }
 
@@ -168,19 +177,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (result.isSuccess) {
         emit(AuthPasswordResetSent(email: event.email));
       } else {
-        emit(AuthFailure(
-          error: result.error?.message ?? 'Password reset failed',
-          code: result.error?.code,
-        ));
+        emit(
+          AuthFailure(
+            error: result.error?.message ?? 'Password reset failed',
+            code: result.error?.code,
+          ),
+        );
       }
     } catch (e) {
       if (kDebugMode) {
         print('Password reset error: $e');
       }
-      emit(AuthFailure(
-        error: 'An unexpected error occurred during password reset',
-        code: 'unknown_error',
-      ));
+      emit(
+        AuthFailure(
+          error: 'An unexpected error occurred during password reset',
+          code: 'unknown_error',
+        ),
+      );
     }
   }
 
@@ -197,32 +210,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       if (result.isSuccess && result.data != null) {
-        emit(AuthSuccess(
-          message: 'Password updated successfully',
-          user: result.data,
-        ));
+        emit(
+          AuthSuccess(
+            message: 'Password updated successfully',
+            user: result.data,
+          ),
+        );
       } else {
-        emit(AuthFailure(
-          error: result.error?.message ?? 'Password update failed',
-          code: result.error?.code,
-        ));
+        emit(
+          AuthFailure(
+            error: result.error?.message ?? 'Password update failed',
+            code: result.error?.code,
+          ),
+        );
       }
     } catch (e) {
       if (kDebugMode) {
         print('Password update error: $e');
       }
-      emit(AuthFailure(
-        error: 'An unexpected error occurred during password update',
-        code: 'unknown_error',
-      ));
+      emit(
+        AuthFailure(
+          error: 'An unexpected error occurred during password update',
+          code: 'unknown_error',
+        ),
+      );
     }
   }
 
   /// Handle external auth state changes
-  void _onAuthStateChanged(
-    AuthStateChanged event,
-    Emitter<AuthState> emit,
-  ) {
+  void _onAuthStateChanged(AuthStateChanged event, Emitter<AuthState> emit) {
     final user = AuthService.currentUser;
     if (user != null) {
       emit(AuthAuthenticated(user: user));

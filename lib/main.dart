@@ -42,7 +42,9 @@ class BeerTinderRoot extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthBloc()),
-        BlocProvider(create: (context) => ThemeBloc()..add(const LoadThemeEvent())),
+        BlocProvider(
+          create: (context) => ThemeBloc()..add(const LoadThemeEvent()),
+        ),
       ],
       child: const BeerTinderApp(),
     );

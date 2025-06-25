@@ -7,7 +7,7 @@ class InvitationService {
   final SupabaseClient _supabase;
 
   InvitationService({SupabaseClient? supabase})
-      : _supabase = supabase ?? Supabase.instance.client;
+    : _supabase = supabase ?? Supabase.instance.client;
 
   /// Sends an invitation from the current user to [toUserId] for [barId]
   Future<void> sendInvite(String toUserId, String barId) async {
@@ -19,7 +19,9 @@ class InvitationService {
 
     try {
       if (kDebugMode) {
-        print('Sending invitation from $fromUserId to $toUserId for bar $barId');
+        print(
+          'Sending invitation from $fromUserId to $toUserId for bar $barId',
+        );
       }
 
       await _supabase.from('bar_invitations').insert({
@@ -90,7 +92,10 @@ class InvitationService {
   }
 
   /// Updates the status of an invitation
-  Future<void> updateInvitationStatus(String invitationId, String status) async {
+  Future<void> updateInvitationStatus(
+    String invitationId,
+    String status,
+  ) async {
     try {
       if (kDebugMode) {
         print('Updating invitation $invitationId status to $status');

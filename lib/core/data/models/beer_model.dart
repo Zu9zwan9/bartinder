@@ -30,7 +30,9 @@ class BeerModel {
       brewery: map['brewery'] as String?,
       country: map['country'] as String?,
       imageUrl: map['image_url'] as String?,
-      flavorTags: map['flavor_tags'] != null ? List<String>.from(map['flavor_tags'] as List) : null,
+      flavorTags: map['flavor_tags'] != null
+          ? List<String>.from(map['flavor_tags'] as List)
+          : null,
       createdAt: DateTime.parse(map['created_at'] as String),
     );
   }

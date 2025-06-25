@@ -37,7 +37,9 @@ class BarModel {
       location: loc,
       city: map['city'] as String?,
       country: map['country'] as String?,
-      images: map['images'] != null ? List<String>.from(map['images'] as List) : null,
+      images: map['images'] != null
+          ? List<String>.from(map['images'] as List)
+          : null,
       rating: map['rating'] != null ? (map['rating'] as num).toDouble() : null,
       partner: map['partner'] as bool,
       discount: map['discount'] as int?,

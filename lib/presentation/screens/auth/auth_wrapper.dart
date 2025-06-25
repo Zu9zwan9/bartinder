@@ -7,15 +7,11 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/theme.dart';
 
-
 /// Wrapper that handles authentication state and navigation
 class AuthWrapper extends StatelessWidget {
   final Widget child;
 
-  const AuthWrapper({
-    super.key,
-    required this.child,
-  });
+  const AuthWrapper({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -205,9 +201,7 @@ class _LoadingScreen extends StatelessWidget {
 class _LoadingOverlay extends StatelessWidget {
   final String message;
 
-  const _LoadingOverlay({
-    required this.message,
-  });
+  const _LoadingOverlay({required this.message});
 
   @override
   Widget build(BuildContext context) {

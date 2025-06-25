@@ -21,7 +21,9 @@ class SubscriptionModel {
       userId: map['user_id'] as String,
       plan: map['plan'] as String,
       startedAt: DateTime.parse(map['started_at'] as String),
-      expiresAt: map['expires_at'] != null ? DateTime.parse(map['expires_at'] as String) : null,
+      expiresAt: map['expires_at'] != null
+          ? DateTime.parse(map['expires_at'] as String)
+          : null,
       status: map['status'] as String,
     );
   }

@@ -9,7 +9,7 @@ class SupabaseMessageRepositoryImpl implements MessageRepository {
   final SupabaseClient _supabase;
 
   SupabaseMessageRepositoryImpl({SupabaseClient? supabase})
-      : _supabase = supabase ?? Supabase.instance.client;
+    : _supabase = supabase ?? Supabase.instance.client;
 
   @override
   Stream<List<Message>> getMessages(String matchId) {
@@ -18,9 +18,7 @@ class SupabaseMessageRepositoryImpl implements MessageRepository {
         .stream(primaryKey: ['id'])
         .eq('match_id', matchId)
         .order('created_at', ascending: true)
-        .map((records) => records
-            .map((e) => Message.fromJson(e))
-            .toList());
+        .map((records) => records.map((e) => Message.fromJson(e)).toList());
   }
 
   @override
@@ -30,9 +28,7 @@ class SupabaseMessageRepositoryImpl implements MessageRepository {
       // Remove fields not present in DB schema
       ..remove('inserted_at')
       ..remove('updated_at');
-    final response = await _supabase
-        .from('messages')
-        .insert(data);
+    final response = await _supabase.from('messages').insert(data);
     if (response.error != null) {
       throw Exception('Failed to send message: ${response.error!.message}');
     }

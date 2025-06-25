@@ -9,10 +9,7 @@ import '../theme/theme.dart';
 class HeadingUsersList extends StatefulWidget {
   final List<String> userIds;
 
-  const HeadingUsersList({
-    super.key,
-    required this.userIds,
-  });
+  const HeadingUsersList({super.key, required this.userIds});
 
   @override
   State<HeadingUsersList> createState() => _HeadingUsersListState();
@@ -39,7 +36,9 @@ class _HeadingUsersListState extends State<HeadingUsersList> {
       final allUsers = await _userRepository.getUsers();
 
       // Filter users by IDs
-      _users = allUsers.where((user) => widget.userIds.contains(user.id)).toList();
+      _users = allUsers
+          .where((user) => widget.userIds.contains(user.id))
+          .toList();
     } catch (e) {
       // Handle error
     } finally {
@@ -54,9 +53,7 @@ class _HeadingUsersListState extends State<HeadingUsersList> {
     if (_isLoading) {
       return const SizedBox(
         height: 80,
-        child: Center(
-          child: CupertinoActivityIndicator(),
-        ),
+        child: Center(child: CupertinoActivityIndicator()),
       );
     }
 
@@ -91,7 +88,9 @@ class _HeadingUsersListState extends State<HeadingUsersList> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1), // TODO: заменить на withAlpha при обновлении Flutter
+                  color: Colors.black.withOpacity(
+                    0.1,
+                  ), // TODO: заменить на withAlpha при обновлении Flutter
                   blurRadius: 4,
                   spreadRadius: 1,
                 ),
@@ -104,7 +103,9 @@ class _HeadingUsersListState extends State<HeadingUsersList> {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: AppTheme.primaryColor.withOpacity(0.2), // TODO: заменить на withAlpha при обновлении Flutter
+                    color: AppTheme.primaryColor.withOpacity(
+                      0.2,
+                    ), // TODO: заменить на withAlpha при обновлении Flutter
                     child: const Icon(
                       CupertinoIcons.person_fill,
                       color: Colors.white,

@@ -6,14 +6,13 @@ import '../../../domain/entities/match_preferences.dart';
 part 'match_preferences_event.dart';
 part 'match_preferences_state.dart';
 
-class MatchPreferencesBloc extends Bloc<MatchPreferencesEvent, MatchPreferencesState> {
+class MatchPreferencesBloc
+    extends Bloc<MatchPreferencesEvent, MatchPreferencesState> {
   final MatchPreferencesRepository repository;
   final String userId;
 
-  MatchPreferencesBloc({
-    required this.repository,
-    required this.userId,
-  }) : super(MatchPreferencesInitial()) {
+  MatchPreferencesBloc({required this.repository, required this.userId})
+    : super(MatchPreferencesInitial()) {
     on<LoadMatchPreferences>(_onLoadMatchPreferences);
     on<UpdateMaxDistance>(_onUpdateMaxDistance);
     on<UpdateAgeRange>(_onUpdateAgeRange);

@@ -19,9 +19,15 @@ class MatchPreferenceModel {
     return MatchPreferenceModel(
       userId: map['user_id'] as String,
       maxDistanceKm: map['max_distance_km'] as int?,
-      ageRange: map['age_range'] != null ? List<int>.from(map['age_range'] as List) : null,
-      genderPreference: map['gender_preference'] != null ? List<String>.from(map['gender_preference'] as List) : null,
-      beerTypes: map['beer_types'] != null ? List<String>.from(map['beer_types'] as List) : null,
+      ageRange: map['age_range'] != null
+          ? List<int>.from(map['age_range'] as List)
+          : null,
+      genderPreference: map['gender_preference'] != null
+          ? List<String>.from(map['gender_preference'] as List)
+          : null,
+      beerTypes: map['beer_types'] != null
+          ? List<String>.from(map['beer_types'] as List)
+          : null,
       showMeInCityOnly: map['show_me_in_city_only'] as bool,
     );
   }

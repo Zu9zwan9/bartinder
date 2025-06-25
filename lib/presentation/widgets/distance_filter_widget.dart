@@ -33,7 +33,12 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
   DistanceFilter? _selectedDistanceFilter;
   late bool _useSpecificDistanceFilter;
 
-  final List<String> _availableGenders = ['Male', 'Female', 'Non-binary', 'Other'];
+  final List<String> _availableGenders = [
+    'Male',
+    'Female',
+    'Non-binary',
+    'Other',
+  ];
 
   @override
   void initState() {
@@ -43,7 +48,8 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
       widget.currentPreferences?.ageRange[0].toDouble() ?? 18.0,
       widget.currentPreferences?.ageRange[1].toDouble() ?? 65.0,
     );
-    _selectedGenders = widget.currentPreferences?.genderPreference.toSet() ?? {};
+    _selectedGenders =
+        widget.currentPreferences?.genderPreference.toSet() ?? {};
     _selectedDistanceFilter = widget.initialDistanceFilter;
     _useSpecificDistanceFilter = widget.initialDistanceFilter != null;
   }
@@ -90,8 +96,8 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
 
           // Distance Filter
           _useSpecificDistanceFilter
-            ? _buildSpecificDistanceFilter()
-            : _buildDistanceFilter(),
+              ? _buildSpecificDistanceFilter()
+              : _buildDistanceFilter(),
           const SizedBox(height: 32),
 
           // Age Range Filter
@@ -186,7 +192,9 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withAlpha(26), // Replaced withOpacity(0.1) with withAlpha(26)
+                color: AppTheme.primaryColor.withAlpha(
+                  26,
+                ), // Replaced withOpacity(0.1) with withAlpha(26)
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
@@ -220,7 +228,10 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
               });
             },
             onChangeEnd: (values) {
-              widget.onAgeRangeChanged([values.start.round(), values.end.round()]);
+              widget.onAgeRangeChanged([
+                values.start.round(),
+                values.end.round(),
+              ]);
             },
           ),
         ),
@@ -239,10 +250,7 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Show Me',
-          style: AppTheme.titleStyle.copyWith(fontSize: 18),
-        ),
+        Text('Show Me', style: AppTheme.titleStyle.copyWith(fontSize: 18)),
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,
@@ -261,11 +269,18 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
                 widget.onGenderPreferenceChanged(_selectedGenders.toList());
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+                    color: isSelected
+                        ? AppTheme.primaryColor
+                        : Colors.grey.shade300,
                     width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(20),
@@ -274,7 +289,9 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
                   gender,
                   style: AppTheme.bodyStyle.copyWith(
                     color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
               ),
@@ -304,12 +321,16 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: !_useSpecificDistanceFilter ? Colors.white : Colors.transparent,
+                  color: !_useSpecificDistanceFilter
+                      ? Colors.white
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: !_useSpecificDistanceFilter
                       ? [
                           BoxShadow(
-                            color: Colors.black.withAlpha(26), // Replaced withOpacity(0.1) with withAlpha(26)
+                            color: Colors.black.withAlpha(
+                              26,
+                            ), // Replaced withOpacity(0.1) with withAlpha(26)
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -320,8 +341,12 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
                   'Distance Range',
                   textAlign: TextAlign.center,
                   style: AppTheme.bodyStyle.copyWith(
-                    fontWeight: !_useSpecificDistanceFilter ? FontWeight.w600 : FontWeight.normal,
-                    color: !_useSpecificDistanceFilter ? AppTheme.primaryColor : Colors.grey.shade600,
+                    fontWeight: !_useSpecificDistanceFilter
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                    color: !_useSpecificDistanceFilter
+                        ? AppTheme.primaryColor
+                        : Colors.grey.shade600,
                   ),
                 ),
               ),
@@ -337,12 +362,16 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: _useSpecificDistanceFilter ? Colors.white : Colors.transparent,
+                  color: _useSpecificDistanceFilter
+                      ? Colors.white
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: _useSpecificDistanceFilter
                       ? [
                           BoxShadow(
-                            color: Colors.black.withAlpha(26), // Replaced withOpacity(0.1) with withAlpha(26)
+                            color: Colors.black.withAlpha(
+                              26,
+                            ), // Replaced withOpacity(0.1) with withAlpha(26)
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -353,8 +382,12 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
                   'Quick Filters',
                   textAlign: TextAlign.center,
                   style: AppTheme.bodyStyle.copyWith(
-                    fontWeight: _useSpecificDistanceFilter ? FontWeight.w600 : FontWeight.normal,
-                    color: _useSpecificDistanceFilter ? AppTheme.primaryColor : Colors.grey.shade600,
+                    fontWeight: _useSpecificDistanceFilter
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                    color: _useSpecificDistanceFilter
+                        ? AppTheme.primaryColor
+                        : Colors.grey.shade600,
                   ),
                 ),
               ),
@@ -369,10 +402,7 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Find Users',
-          style: AppTheme.titleStyle.copyWith(fontSize: 18),
-        ),
+        Text('Find Users', style: AppTheme.titleStyle.copyWith(fontSize: 18)),
         const SizedBox(height: 16),
         GridView.count(
           shrinkWrap: true,
@@ -396,13 +426,17 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
                 decoration: BoxDecoration(
                   color: isSelected ? AppTheme.primaryColor : Colors.white,
                   border: Border.all(
-                    color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+                    color: isSelected
+                        ? AppTheme.primaryColor
+                        : Colors.grey.shade300,
                     width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha(13), // Replaced withOpacity(0.05) with withAlpha(13)
+                      color: Colors.black.withAlpha(
+                        13,
+                      ), // Replaced withOpacity(0.05) with withAlpha(13)
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -421,7 +455,9 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
                       filter.displayName,
                       style: AppTheme.bodyStyle.copyWith(
                         color: isSelected ? Colors.white : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                         fontSize: 12,
                       ),
                       textAlign: TextAlign.center,
@@ -437,7 +473,9 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withAlpha(26), // Replaced withOpacity(0.1) with withAlpha(26)
+              color: AppTheme.primaryColor.withAlpha(
+                26,
+              ), // Replaced withOpacity(0.1) with withAlpha(26)
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -487,9 +525,9 @@ class _DistanceFilterWidgetState extends State<DistanceFilterWidget> {
         color: AppTheme.primaryColor,
         borderRadius: BorderRadius.circular(12),
         onPressed: () {
-         if (_useSpecificDistanceFilter && _selectedDistanceFilter != null) {
-           widget.onDistanceFilterChanged?.call(_selectedDistanceFilter!);
-         }
+          if (_useSpecificDistanceFilter && _selectedDistanceFilter != null) {
+            widget.onDistanceFilterChanged?.call(_selectedDistanceFilter!);
+          }
           Navigator.of(context).pop();
         },
         child: Text(

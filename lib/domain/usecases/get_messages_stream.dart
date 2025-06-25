@@ -14,4 +14,3 @@ class GetMessagesStream {
     return _repository.getMessages(matchId);
   }
 }
-

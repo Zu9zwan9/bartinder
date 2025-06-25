@@ -52,13 +52,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _signUp() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthSignUpRequested(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-              name: _nameController.text.trim(),
-              age: int.parse(_ageController.text),
-            ),
-          );
+        AuthSignUpRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          name: _nameController.text.trim(),
+          age: int.parse(_ageController.text),
+        ),
+      );
     }
   }
 
@@ -129,9 +129,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           'Sign Up',
-          style: AppTheme.navTitle.copyWith(
-            color: AppTheme.textColor(context),
-          ),
+          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
         ),
         backgroundColor: AppTheme.isDarkMode(context)
             ? AppTheme.darkCardColor
@@ -169,7 +167,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Join Beer Tinder to find your perfect bar match',
+                    'Sip. Swipe. Repeat',
                     style: AppTheme.subhead.copyWith(
                       color: AppTheme.secondaryTextColor(context),
                     ),
@@ -194,7 +192,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           icon: CupertinoIcons.person,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
-                          onFieldSubmitted: (_) => _emailFocusNode.requestFocus(),
+                          onFieldSubmitted: (_) =>
+                              _emailFocusNode.requestFocus(),
                         ),
 
                         _buildDivider(),
@@ -221,14 +220,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           icon: CupertinoIcons.calendar,
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.next,
-                          onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
+                          onFieldSubmitted: (_) =>
+                              _passwordFocusNode.requestFocus(),
                         ),
 
                         _buildDivider(),
 
                         // Password field
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           child: Row(
                             children: [
                               Icon(
@@ -253,7 +256,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     color: AppTheme.cardColor(context),
                                   ),
                                   padding: EdgeInsets.zero,
-                                  onSubmitted: (_) => _confirmPasswordFocusNode.requestFocus(),
+                                  onSubmitted: (_) =>
+                                      _confirmPasswordFocusNode.requestFocus(),
                                 ),
                               ),
                               CupertinoButton(
@@ -278,7 +282,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                         // Confirm Password field
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           child: Row(
                             children: [
                               Icon(
@@ -310,7 +317,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
                                   setState(() {
-                                    _obscureConfirmPassword = !_obscureConfirmPassword;
+                                    _obscureConfirmPassword =
+                                        !_obscureConfirmPassword;
                                   });
                                 },
                                 child: Icon(
@@ -368,9 +376,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     onPressed: _signUp,
                     child: Text(
                       'Create Account',
-                      style: AppTheme.button.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: AppTheme.button.copyWith(color: Colors.white),
                     ),
                   ),
 
@@ -432,10 +438,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: AppTheme.secondaryTextColor(context),
-          ),
+          Icon(icon, color: AppTheme.secondaryTextColor(context)),
           const SizedBox(width: 12),
           Expanded(
             child: CupertinoTextField(
@@ -445,16 +448,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
               placeholderStyle: AppTheme.body.copyWith(
                 color: AppTheme.secondaryTextColor(context),
               ),
-              style: AppTheme.body.copyWith(
-                color: AppTheme.textColor(context),
-              ),
+              style: AppTheme.body.copyWith(color: AppTheme.textColor(context)),
               keyboardType: keyboardType,
               textInputAction: textInputAction,
               textCapitalization: textCapitalization,
               autocorrect: autocorrect,
-              decoration: BoxDecoration(
-                color: AppTheme.cardColor(context),
-              ),
+              decoration: BoxDecoration(color: AppTheme.cardColor(context)),
               padding: EdgeInsets.zero,
               onSubmitted: onFieldSubmitted,
             ),

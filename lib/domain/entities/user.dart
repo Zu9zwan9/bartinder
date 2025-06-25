@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Represents a user profile in the beerTinder app
 class User extends Equatable {
   final String id;
   final String name;
@@ -54,27 +53,27 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        age,
-        photoUrl,
-        favoriteBeer,
-        bio,
-        lastCheckedInLocation,
-        lastCheckedInDistance,
-        beerPreferences,
-        location,
-        latitude,
-        longitude,
-        email,
-        phone,
-        avatarUrl,
-        gender,
-        city,
-        country,
-        interests,
-        birthDate,
-        isPremium,
-        lastActiveAt,
-      ];
+    id,
+    name,
+    age,
+    photoUrl,
+    favoriteBeer,
+    bio,
+    lastCheckedInLocation,
+    lastCheckedInDistance,
+    beerPreferences,
+    location,
+    latitude,
+    longitude,
+    email,
+    phone,
+    avatarUrl,
+    gender,
+    city,
+    country,
+    interests,
+    birthDate,
+    isPremium,
+    lastActiveAt,
+  ];
 }

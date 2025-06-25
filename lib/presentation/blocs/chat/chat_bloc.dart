@@ -26,18 +26,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required SendMessageUseCase sendMessageUseCase,
     required String currentUserId,
     required String otherUserId,
-  })  : _getMessagesStream = getMessagesStream,
-        _sendMessageUseCase = sendMessageUseCase,
-        _currentUserId = currentUserId,
-        _otherUserId = otherUserId,
-        super(const ChatInitial()) {
+  }) : _getMessagesStream = getMessagesStream,
+       _sendMessageUseCase = sendMessageUseCase,
+       _currentUserId = currentUserId,
+       _otherUserId = otherUserId,
+       super(const ChatInitial()) {
     on<LoadMessages>(_onLoadMessages);
     on<MessagesUpdated>(_onMessagesUpdated);
     on<ChatStreamError>(_onChatStreamError);
     on<SendTextMessage>(_onSendTextMessage);
   }
 
-  Future<void> _onLoadMessages(LoadMessages event, Emitter<ChatState> emit) async {
+  Future<void> _onLoadMessages(
+    LoadMessages event,
+    Emitter<ChatState> emit,
+  ) async {
     emit(const ChatLoading());
     try {
       // Find the match ID from the likes table
@@ -47,10 +50,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         return;
       }
 
-      _subscription = _getMessagesStream.execute(_matchId!).listen(
-        (messages) => add(MessagesUpdated(messages)),
-        onError: (error) => add(ChatStreamError(error.toString())),
-      );
+      _subscription = _getMessagesStream
+          .execute(_matchId!)
+          .listen(
+            (messages) => add(MessagesUpdated(messages)),
+            onError: (error) => add(ChatStreamError(error.toString())),
+          );
     } catch (e) {
       emit(ChatError('Failed to load messages: ${e.toString()}'));
     }
