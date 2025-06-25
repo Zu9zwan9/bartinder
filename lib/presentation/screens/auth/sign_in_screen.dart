@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
+import '../../theme/theme.dart';
 
-/// Sign in screen following Apple HIG guidelines
+/// Sign in screen following Apple HIG guidelines with dark mode support
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -35,11 +37,11 @@ class _SignInScreenState extends State<SignInScreen> {
   void _signIn() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthSignInRequested(
-              email: _emailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+        AuthSignInRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
     }
   }
 
@@ -66,8 +68,15 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Sign In'),
+      backgroundColor: AppTheme.backgroundColor(context),
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(
+          'Sign In',
+          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
+        ),
+        backgroundColor: AppTheme.isDarkMode(context)
+            ? AppTheme.darkCardColor
+            : Colors.white,
         border: null,
       ),
       child: SafeArea(
@@ -87,26 +96,25 @@ class _SignInScreenState extends State<SignInScreen> {
                   const SizedBox(height: 40),
 
                   // App Logo/Title
-                  const Icon(
+                  Icon(
                     CupertinoIcons.heart_fill,
                     size: 80,
-                    color: CupertinoColors.systemPink,
+                    color: AppTheme.systemPink(context),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Beer Tinder',
-                    style: TextStyle(
-                      fontSize: 32,
+                  Text(
+                    'SipSwipe',
+                    style: AppTheme.largeTitle.copyWith(
+                      color: AppTheme.textColor(context),
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Find your perfect bar match',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: CupertinoColors.secondaryLabel,
+                    style: AppTheme.subhead.copyWith(
+                      color: AppTheme.secondaryTextColor(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -114,69 +122,119 @@ class _SignInScreenState extends State<SignInScreen> {
                   const SizedBox(height: 48),
 
                   // Email Field
-                  CupertinoFormSection.insetGrouped(
-                    children: [
-                      CupertinoFormRow(
-                        prefix: const Icon(
-                          CupertinoIcons.mail,
-                          color: CupertinoColors.secondaryLabel,
-                        ),
-                        child: CupertinoTextFormFieldRow(
-                          controller: _emailController,
-                          focusNode: _emailFocusNode,
-                          placeholder: 'Email',
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          autocorrect: false,
-                          validator: _validateEmail,
-                          onFieldSubmitted: (_) {
-                            _passwordFocusNode.requestFocus();
-                          },
-                        ),
-                      ),
-                      CupertinoFormRow(
-                        prefix: const Icon(
-                          CupertinoIcons.lock,
-                          color: CupertinoColors.secondaryLabel,
-                        ),
-                        child: CupertinoTextFormFieldRow(
-                          controller: _passwordController,
-                          focusNode: _passwordFocusNode,
-                          placeholder: 'Password',
-                          obscureText: _obscurePassword,
-                          textInputAction: TextInputAction.done,
-                          validator: _validatePassword,
-                          prefix: CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            }, minimumSize: Size(0, 0),
-                            child: Icon(
-                              _obscurePassword
-                                  ? CupertinoIcons.eye
-                                  : CupertinoIcons.eye_slash,
-                              color: CupertinoColors.secondaryLabel,
-                            ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor(context),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
-                          onFieldSubmitted: (_) => _signIn(),
+                          child: Row(
+                            children: [
+                              Icon(
+                                CupertinoIcons.mail,
+                                color: AppTheme.secondaryTextColor(context),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: CupertinoTextField(
+                                  controller: _emailController,
+                                  focusNode: _emailFocusNode,
+                                  placeholder: 'Email',
+                                  placeholderStyle: AppTheme.body.copyWith(
+                                    color: AppTheme.secondaryTextColor(context),
+                                  ),
+                                  style: AppTheme.body.copyWith(
+                                    color: AppTheme.textColor(context),
+                                  ),
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  autocorrect: false,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.cardColor(context),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  onSubmitted: (_) {
+                                    _passwordFocusNode.requestFocus();
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        Divider(
+                          height: 1,
+                          thickness: 0.5,
+                          color: AppTheme.dividerColor(context),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                CupertinoIcons.lock,
+                                color: AppTheme.secondaryTextColor(context),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: CupertinoTextField(
+                                  controller: _passwordController,
+                                  focusNode: _passwordFocusNode,
+                                  placeholder: 'Password',
+                                  placeholderStyle: AppTheme.body.copyWith(
+                                    color: AppTheme.secondaryTextColor(context),
+                                  ),
+                                  style: AppTheme.body.copyWith(
+                                    color: AppTheme.textColor(context),
+                                  ),
+                                  obscureText: _obscurePassword,
+                                  textInputAction: TextInputAction.done,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.cardColor(context),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  onSubmitted: (_) => _signIn(),
+                                ),
+                              ),
+                              CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                                child: Icon(
+                                  _obscurePassword
+                                      ? CupertinoIcons.eye
+                                      : CupertinoIcons.eye_slash,
+                                  color: AppTheme.secondaryTextColor(context),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 24),
 
                   // Sign In Button
-                  CupertinoButton.filled(
+                  CupertinoButton(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(8),
                     onPressed: _signIn,
-                    child: const Text(
+                    child: Text(
                       'Sign In',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTheme.button.copyWith(color: Colors.white),
                     ),
                   ),
 
@@ -185,10 +243,10 @@ class _SignInScreenState extends State<SignInScreen> {
                   // Forgot Password Button
                   CupertinoButton(
                     onPressed: () => context.go('/auth/forgot-password'),
-                    child: const Text(
+                    child: Text(
                       'Forgot Password?',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: AppTheme.body.copyWith(
+                        color: AppTheme.systemBlue(context),
                       ),
                     ),
                   ),
@@ -201,22 +259,22 @@ class _SignInScreenState extends State<SignInScreen> {
                       Expanded(
                         child: Container(
                           height: 1,
-                          color: CupertinoColors.separator.resolveFrom(context),
+                          color: AppTheme.dividerColor(context),
                         ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           'or',
-                          style: TextStyle(
-                            color: CupertinoColors.secondaryLabel,
+                          style: AppTheme.caption1.copyWith(
+                            color: AppTheme.secondaryTextColor(context),
                           ),
                         ),
                       ),
                       Expanded(
                         child: Container(
                           height: 1,
-                          color: CupertinoColors.separator.resolveFrom(context),
+                          color: AppTheme.dividerColor(context),
                         ),
                       ),
                     ],
@@ -228,17 +286,16 @@ class _SignInScreenState extends State<SignInScreen> {
                   CupertinoButton(
                     onPressed: () => context.go('/auth/signup'),
                     child: RichText(
-                      text: const TextSpan(
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: CupertinoColors.label,
+                      text: TextSpan(
+                        style: AppTheme.body.copyWith(
+                          color: AppTheme.textColor(context),
                         ),
                         children: [
-                          TextSpan(text: 'Don\'t have an account? '),
+                          const TextSpan(text: 'Don\'t have an account? '),
                           TextSpan(
                             text: 'Sign Up',
-                            style: TextStyle(
-                              color: CupertinoColors.activeBlue,
+                            style: AppTheme.body.copyWith(
+                              color: AppTheme.systemBlue(context),
                               fontWeight: FontWeight.w600,
                             ),
                           ),

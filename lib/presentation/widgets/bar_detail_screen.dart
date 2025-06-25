@@ -43,7 +43,8 @@ class BarDetailScreen extends StatelessWidget {
                   children: [
                     // Bar image
                     Image.network(
-                      bar.photoUrl ?? 'https://images.unsplash.com/photo-1546726747-421c6d69c929',
+                      bar.photoUrl ??
+                          'https://images.unsplash.com/photo-1546726747-421c6d69c929',
                       height: double.infinity,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -164,23 +165,14 @@ class BarDetailScreen extends StatelessWidget {
                   children: [
                     // Description
                     if (bar.description != null) ...[
-                      Text(
-                        'About',
-                        style: AppTheme.subtitleStyle,
-                      ),
+                      Text('About', style: AppTheme.subtitleStyle),
                       const SizedBox(height: 8),
-                      Text(
-                        bar.description!,
-                        style: AppTheme.bodyStyle,
-                      ),
+                      Text(bar.description!, style: AppTheme.bodyStyle),
                       const SizedBox(height: 16),
                     ],
 
                     // Beer types
-                    Text(
-                      'Beer Types',
-                      style: AppTheme.subtitleStyle,
-                    ),
+                    Text('Beer Types', style: AppTheme.subtitleStyle),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -218,24 +210,22 @@ class BarDetailScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                         ],
-                        if (bar.hasDiscount)
+                        if (bar.hasDiscount) ...[
                           _buildInfoChip(
                             icon: CupertinoIcons.tag_fill,
                             label: bar.discountPercentage != null
                                 ? '${bar.discountPercentage}% Off'
                                 : 'Discount',
-                            color: AppTheme.successColor,
+                            color: AppTheme.successColor(context),
                           ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 16),
 
                     // Events
                     if (bar.events != null && bar.events!.isNotEmpty) ...[
-                      Text(
-                        'Upcoming Events',
-                        style: AppTheme.subtitleStyle,
-                      ),
+                      Text('Upcoming Events', style: AppTheme.subtitleStyle),
                       const SizedBox(height: 8),
                       ...bar.events!.map((event) => _buildEventCard(event)),
                       const SizedBox(height: 16),
@@ -267,152 +257,146 @@ class BarDetailScreen extends StatelessWidget {
             ],
           ),
         ),
-      ));
-    }
+      ),
+    );
+  }
 
-    Widget _buildInfoChip({
-      required IconData icon,
-      required String label,
-      required Color color,
-    }) {
-      return Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 4,
-        ),
-        decoration: BoxDecoration(
-          color: color.withAlpha(204),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(204),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppTheme.bodyStyle.copyWith(
+              fontSize: 12,
               color: Colors.white,
-              size: 14,
             ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: AppTheme.bodyStyle.copyWith(
-                fontSize: 12,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventCard(Event event) {
+    final now = DateTime.now();
+    final isToday =
+        event.startTime.day == now.day &&
+        event.startTime.month == now.month &&
+        event.startTime.year == now.year;
+    final isTomorrow =
+        event.startTime.day == now.day + 1 &&
+        event.startTime.month == now.month &&
+        event.startTime.year == now.year;
+
+    String dateText;
+    if (isToday) {
+      dateText = 'Today';
+    } else if (isTomorrow) {
+      dateText = 'Tomorrow';
+    } else {
+      dateText =
+          '${event.startTime.day}/${event.startTime.month}/${event.startTime.year}';
     }
 
-    Widget _buildEventCard(Event event) {
-      final now = DateTime.now();
-      final isToday = event.startTime.day == now.day &&
-          event.startTime.month == now.month &&
-          event.startTime.year == now.year;
-      final isTomorrow = event.startTime.day == now.day + 1 &&
-          event.startTime.month == now.month &&
-          event.startTime.year == now.year;
+    final timeText =
+        '${event.startTime.hour}:${event.startTime.minute.toString().padLeft(2, '0')}';
 
-      String dateText;
-      if (isToday) {
-        dateText = 'Today';
-      } else if (isTomorrow) {
-        dateText = 'Tomorrow';
-      } else {
-        dateText = '${event.startTime.day}/${event.startTime.month}/${event.startTime.year}';
-      }
-
-      final timeText = '${event.startTime.hour}:${event.startTime.minute.toString().padLeft(2, '0')}';
-
-      return Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(13),
-              blurRadius: 4,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  event.name,
-                  style: AppTheme.subtitleStyle.copyWith(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(13),
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                event.name,
+                style: AppTheme.subtitleStyle.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentColor.withAlpha(51),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$dateText at $timeText',
+                  style: AppTheme.bodyStyle.copyWith(
+                    fontSize: 12,
+                    color: AppTheme.accentColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withAlpha(51),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '$dateText at $timeText',
-                    style: AppTheme.bodyStyle.copyWith(
-                      fontSize: 12,
-                      color: AppTheme.accentColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              event.description,
-              style: AppTheme.bodyStyle,
-            ),
-          ],
-        ),
-      );
-    }
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(event.description, style: AppTheme.bodyStyle),
+        ],
+      ),
+    );
+  }
 
-    Color _getCrowdLevelColor(String level) {
-      switch (level.toLowerCase()) {
-        case 'low':
-          return Colors.green;
-        case 'medium':
-          return Colors.orange;
-        case 'high':
-          return Colors.red;
-        default:
-          return Colors.blue;
-      }
-    }
-
-    Future<void> _openMaps(double latitude, double longitude, String name) async {
-      // Use native map apps if available
-      final appleUri = Uri.parse('maps://?q=$name&ll=$latitude,$longitude');
-      final googleUri = Uri.parse('geo:$latitude,$longitude?q=$name');
-      final webUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
-      try {
-        if (Platform.isIOS && await canLaunchUrl(appleUri)) {
-          await launchUrl(appleUri);
-          return;
-        }
-        if (Platform.isAndroid && await canLaunchUrl(googleUri)) {
-          await launchUrl(googleUri);
-          return;
-        }
-        if (await canLaunchUrl(webUri)) {
-          await launchUrl(webUri, mode: LaunchMode.externalApplication);
-          return;
-        }
-      } catch (_) {}
-      // Fallback URL
-      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+  Color _getCrowdLevelColor(String level) {
+    switch (level.toLowerCase()) {
+      case 'low':
+        return Colors.green;
+      case 'medium':
+        return Colors.orange;
+      case 'high':
+        return Colors.red;
+      default:
+        return Colors.blue;
     }
   }
+
+  Future<void> _openMaps(double latitude, double longitude, String name) async {
+    // Use native map apps if available
+    final appleUri = Uri.parse('maps://?q=$name&ll=$latitude,$longitude');
+    final googleUri = Uri.parse('geo:$latitude,$longitude?q=$name');
+    final webUri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude',
+    );
+    try {
+      if (Platform.isIOS && await canLaunchUrl(appleUri)) {
+        await launchUrl(appleUri);
+        return;
+      }
+      if (Platform.isAndroid && await canLaunchUrl(googleUri)) {
+        await launchUrl(googleUri);
+        return;
+      }
+      if (await canLaunchUrl(webUri)) {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+    } catch (_) {}
+    // Fallback URL
+    await launchUrl(webUri, mode: LaunchMode.externalApplication);
+  }
+}

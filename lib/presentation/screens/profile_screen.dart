@@ -1,13 +1,15 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
+import '../theme/theme.dart';
 import '../../data/services/auth_service.dart';
-import '../../data/services/storage_service.dart';
+import '../../data/services/avatar_service.dart';
 
 /// Production-ready profile screen following Apple HIG guidelines
 class ProfileScreen extends StatefulWidget {
@@ -22,11 +24,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _likedBars = 0;
   int _matches = 0;
   bool _isUpdatingAvatar = false;
+  String? _avatarUrl;
 
   @override
   void initState() {
     super.initState();
     _loadStats();
+    _loadProfile();
+  }
+
+  // Load avatar url from users table and initialize if needed
+  Future<void> _loadProfile() async {
+    final userId = AuthService.currentUserId;
+    if (userId == null) return;
+
+    try {
+      // Get current avatar URL
+      String? url = await AvatarService.getCurrentUserAvatarUrl();
+
+      // If user doesn't have an avatar, initialize one
+      if (url == null || url.isEmpty) {
+        setState(() => _isUpdatingAvatar = true);
+        url = await AvatarService.initializeUserAvatar(userId);
+        setState(() => _isUpdatingAvatar = false);
+      }
+
+      if (mounted) {
+        setState(() {
+          _avatarUrl = url;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUpdatingAvatar = false;
+          _avatarUrl = null;
+        });
+      }
+    }
   }
 
   Future<void> _loadStats() async {
@@ -46,16 +81,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text(
+          'Sign Out',
+          style: AppTheme.subtitleStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to sign out?',
+          style: AppTheme.bodyStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.systemBlue(context),
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            child: const Text('Sign Out'),
+            child: Text(
+              'Sign Out',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.systemRed(context),
+              ),
+            ),
             onPressed: () {
               Navigator.of(context).pop();
               context.read<AuthBloc>().add(const AuthSignOutRequested());
@@ -70,16 +125,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Clear Data'),
-        content: const Text('This will clear all your liked bars, users, and matches. This action cannot be undone.'),
+        title: Text(
+          'Clear Data',
+          style: AppTheme.subtitleStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        content: Text(
+          'This will clear all your liked bars, users, and matches. This action cannot be undone.',
+          style: AppTheme.bodyStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.systemBlue(context),
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            child: const Text('Clear'),
+            child: Text(
+              'Clear',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.systemRed(context),
+              ),
+            ),
             onPressed: () async {
               Navigator.of(context).pop();
               final prefs = await SharedPreferences.getInstance();
@@ -97,56 +172,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _changeAvatar() {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Change Avatar'),
-        content: const Text('Generate a new random avatar?'),
-        actions: [
-          CupertinoDialogAction(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          CupertinoDialogAction(
-            child: const Text('Generate'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _generateNewRandomAvatar();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _generateNewRandomAvatar() async {
-    setState(() {
-      _isUpdatingAvatar = true;
-    });
+    final userId = AuthService.currentUserId;
+    if (userId == null) {
+      _showErrorMessage('User not authenticated');
+      return;
+    }
 
+    setState(() => _isUpdatingAvatar = true);
     try {
-      final result = await AuthService.updateAvatar(AuthService.generateRandomAvatar());
-      if (result.isSuccess) {
-        context.read<AuthBloc>().add(const AuthStatusRequested());
-        if (mounted) {
-          _showSuccessMessage('Avatar updated successfully!');
-        }
+      final newAvatarUrl = await AvatarService.regenerateAvatar(userId);
+      if (newAvatarUrl != null) {
+        setState(() {
+          _avatarUrl = newAvatarUrl;
+        });
+        if (mounted) _showSuccessMessage('Avatar updated successfully!');
       } else {
-        if (mounted) {
-          _showErrorMessage(result.error?.message ?? 'Failed to update avatar');
-        }
+        if (mounted)
+          _showErrorMessage('Failed to update avatar. Please try again.');
       }
     } catch (e) {
-      if (mounted) {
-        _showErrorMessage('An error occurred while updating avatar');
-      }
+      if (mounted) _showErrorMessage('An error occurred while updating avatar');
     } finally {
-      if (mounted) {
-        setState(() {
-          _isUpdatingAvatar = false;
-        });
-      }
+      if (mounted) setState(() => _isUpdatingAvatar = false);
     }
   }
 
@@ -154,11 +202,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Success'),
-        content: Text(message),
+        title: Text(
+          'Success',
+          style: AppTheme.subtitleStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        content: Text(
+          message,
+          style: AppTheme.bodyStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.primaryColor,
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -170,11 +233,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Error'),
-        content: Text(message),
+        title: Text(
+          'Error',
+          style: AppTheme.subtitleStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
+        content: Text(
+          message,
+          style: AppTheme.bodyStyle.copyWith(
+            color: AppTheme.textColor(context),
+          ),
+        ),
         actions: [
           CupertinoDialogAction(
-            child: const Text('OK'),
+            child: Text(
+              'OK',
+              style: AppTheme.buttonStyle.copyWith(
+                color: AppTheme.primaryColor,
+              ),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -185,247 +263,219 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Profile'),
+      backgroundColor: AppTheme.backgroundColor(context),
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(
+          'Profile',
+          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
+        ),
+        backgroundColor: AppTheme.isDarkMode(context)
+            ? AppTheme.darkCardColor
+            : Colors.white,
         border: null,
       ),
       child: SafeArea(
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             if (state is! AuthAuthenticated) {
-              return const Center(
-                child: CupertinoActivityIndicator(),
+              return Center(
+                child: CupertinoActivityIndicator(
+                  color: AppTheme.isDarkMode(context)
+                      ? AppTheme.primaryColor
+                      : AppTheme.primaryDarkColor,
+                ),
               );
             }
 
             final user = state.user;
             final userName = user.userMetadata?['name'] as String? ?? 'User';
-            final userAge = user.userMetadata?['age'] as int? ?? 0;
-            final avatarUrl = user.userMetadata?['avatar_url'] as String?;
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
+            // Display with ListView
+            return SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
                 children: [
-                  const SizedBox(height: 20),
-
-                  // Profile Avatar
-                  GestureDetector(
-                    onTap: _isUpdatingAvatar ? null : _changeAvatar,
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: CupertinoColors.systemGrey5.resolveFrom(context),
-                            border: Border.all(
-                              color: _isUpdatingAvatar
-                                  ? CupertinoColors.activeBlue
-                                  : CupertinoColors.systemGrey4.resolveFrom(context),
-                              width: 2,
-                            ),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: _isUpdatingAvatar
-                                ? const Center(
-                                    child: CupertinoActivityIndicator(),
-                                  )
-                                : avatarUrl != null
-                                    ? Image.network(
-                                        avatarUrl,
-                                        width: 120,
-                                        height: 120,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return const Icon(
-                                            CupertinoIcons.person_fill,
-                                            size: 60,
-                                            color: CupertinoColors.systemGrey,
-                                          );
-                                        },
-                                      )
-                                    : const Icon(
-                                        CupertinoIcons.person_fill,
-                                        size: 60,
-                                        color: CupertinoColors.systemGrey,
-                                      ),
-                          ),
-                        ),
-                        if (!_isUpdatingAvatar)
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: CupertinoColors.activeBlue,
-                                border: Border.all(
-                                  color: CupertinoColors.systemBackground.resolveFrom(context),
-                                  width: 2,
+                  // Avatar display using SVG support
+                  Center(
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppTheme.isDarkMode(context)
+                            ? AppTheme.systemGray4(context)
+                            : AppTheme.systemGray5(context),
+                      ),
+                      child: ClipOval(
+                        child: _isUpdatingAvatar
+                            ? Center(
+                                child: CupertinoActivityIndicator(
+                                  color: AppTheme.isDarkMode(context)
+                                      ? AppTheme.primaryColor
+                                      : AppTheme.primaryDarkColor,
                                 ),
+                              )
+                            : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                            ? _buildAvatar(_avatarUrl!)
+                            : Icon(
+                                CupertinoIcons.person_fill,
+                                size: 50,
+                                color: AppTheme.iconColor(context),
                               ),
-                              child: const Icon(
-                                CupertinoIcons.camera_fill,
-                                color: CupertinoColors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Avatar change hint
-                  if (!_isUpdatingAvatar)
-                    Text(
-                      'Tap to change avatar',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: CupertinoColors.secondaryLabel.resolveFrom(context),
                       ),
                     ),
-
+                  ),
+                  const SizedBox(height: 12),
+                  // Button to regenerate avatar
+                  Center(
+                    child: CupertinoButton(
+                      color: AppTheme.systemBlue(context),
+                      borderRadius: BorderRadius.circular(8),
+                      onPressed: _isUpdatingAvatar
+                          ? null
+                          : _generateNewRandomAvatar,
+                      child: Text(
+                        'Generate Avatar',
+                        style: AppTheme.buttonStyle.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 16),
-
-                  // User Name
                   Text(
                     userName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                    style: AppTheme.title3.copyWith(
+                      color: AppTheme.textColor(context),
                     ),
+                    textAlign: TextAlign.center,
                   ),
-
-                  const SizedBox(height: 4),
-
-                  // User Age
-                  if (userAge > 0)
-                    Text(
-                      '$userAge years old',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: CupertinoColors.secondaryLabel,
-                      ),
-                    ),
-
                   const SizedBox(height: 8),
-
-                  // User Email
                   Text(
                     user.email ?? '',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: CupertinoColors.secondaryLabel,
+                    style: AppTheme.headline.copyWith(
+                      color: AppTheme.secondaryTextColor(context),
                     ),
+                    textAlign: TextAlign.center,
                   ),
-
                   const SizedBox(height: 32),
 
                   // Stats Section
-                  CupertinoFormSection.insetGrouped(
-                    header: const Text('STATISTICS'),
-                    children: [
-                      _buildStatRow(
-                        icon: CupertinoIcons.person_2_fill,
-                        label: 'Liked Users',
-                        value: _likedUsers,
-                        color: CupertinoColors.systemPink,
-                      ),
-                      _buildStatRow(
-                        icon: CupertinoIcons.location_fill,
-                        label: 'Liked Bars',
-                        value: _likedBars,
-                        color: CupertinoColors.systemOrange,
-                      ),
-                      _buildStatRow(
-                        icon: CupertinoIcons.heart_fill,
-                        label: 'Matches',
-                        value: _matches,
-                        color: CupertinoColors.systemRed,
-                      ),
-                    ],
+                  _buildSectionHeader('STATISTICS'),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor(context),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      children: [
+                        _buildStatRow(
+                          icon: CupertinoIcons.person_2_fill,
+                          label: 'Liked Users',
+                          value: _likedUsers,
+                          color: AppTheme.systemPink(context),
+                        ),
+                        Divider(
+                          height: 1,
+                          thickness: 0.5,
+                          color: AppTheme.dividerColor(context),
+                        ),
+                        _buildStatRow(
+                          icon: CupertinoIcons.location_fill,
+                          label: 'Liked Bars',
+                          value: _likedBars,
+                          color: AppTheme.systemOrange(context),
+                        ),
+                        Divider(
+                          height: 1,
+                          thickness: 0.5,
+                          color: AppTheme.dividerColor(context),
+                        ),
+                        _buildStatRow(
+                          icon: CupertinoIcons.heart_fill,
+                          label: 'Matches',
+                          value: _matches,
+                          color: AppTheme.systemRed(context),
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 32),
 
                   // Actions Section
-                  CupertinoFormSection.insetGrouped(
-                    header: const Text('ACTIONS'),
-                    children: [
-                      CupertinoFormRow(
-                        prefix: const Icon(
-                          CupertinoIcons.refresh,
-                          color: CupertinoColors.systemBlue,
+                  _buildSectionHeader('ACTIONS'),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor(context),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      children: [
+                        _buildActionRow(
+                          icon: CupertinoIcons.refresh,
+                          label: 'Refresh Statistics',
+                          color: AppTheme.systemBlue(context),
+                          onTap: _loadStats,
                         ),
-                        child: CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          alignment: Alignment.centerLeft,
-                          onPressed: _loadStats,
-                          child: const Text(
-                            'Refresh Statistics',
-                            style: TextStyle(
-                              color: CupertinoColors.label,
-                            ),
-                          ),
+                        Divider(
+                          height: 1,
+                          thickness: 0.5,
+                          color: AppTheme.dividerColor(context),
                         ),
-                      ),
-                      CupertinoFormRow(
-                        prefix: const Icon(
-                          CupertinoIcons.clear,
-                          color: CupertinoColors.systemOrange,
+                        _buildActionRow(
+                          icon: CupertinoIcons.clear,
+                          label: 'Clear Data',
+                          color: AppTheme.systemOrange(context),
+                          onTap: _clearData,
                         ),
-                        child: CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          alignment: Alignment.centerLeft,
-                          onPressed: _clearData,
-                          child: const Text(
-                            'Clear Data',
-                            style: TextStyle(
-                              color: CupertinoColors.label,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 32),
 
                   // Sign Out Button
                   CupertinoButton(
-                    color: CupertinoColors.destructiveRed,
+                    color: AppTheme.systemRed(context),
                     borderRadius: BorderRadius.circular(8),
                     onPressed: _signOut,
-                    child: const Text(
+                    child: Text(
                       'Sign Out',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTheme.buttonStyle.copyWith(color: Colors.white),
                     ),
                   ),
 
                   const SizedBox(height: 32),
 
                   // App Version
-                  const Text(
-                    'Beer Tinder v1.0.0',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: CupertinoColors.secondaryLabel,
+                  Text(
+                    'SipSwipe v1.0.0',
+                    style: AppTheme.caption2.copyWith(
+                      color: AppTheme.secondaryTextColor(context),
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 8),
+      child: Text(
+        title,
+        style: AppTheme.footnote.copyWith(
+          color: AppTheme.secondaryTextColor(context),
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -437,30 +487,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required int value,
     required Color color,
   }) {
-    return CupertinoFormRow(
-      prefix: Icon(
-        icon,
-        color: color,
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTheme.bodyStyle.copyWith(
+                color: AppTheme.textColor(context),
+              ),
             ),
           ),
           Text(
             '$value',
-            style: const TextStyle(
-              fontSize: 16,
+            style: AppTheme.bodyStyle.copyWith(
               fontWeight: FontWeight.w600,
-              color: CupertinoColors.secondaryLabel,
+              color: AppTheme.secondaryTextColor(context),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildActionRow({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTheme.bodyStyle.copyWith(
+                  color: AppTheme.textColor(context),
+                ),
+              ),
+            ),
+            Icon(
+              CupertinoIcons.chevron_right,
+              color: AppTheme.iconColor(context),
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color systemPink(BuildContext context) {
+    return AppTheme.isDarkMode(context)
+        ? const Color(0xFFFF375F) // System Pink Dark
+        : const Color(0xFFFF2D55); // System Pink Light
+  }
+
+  Color systemOrange(BuildContext context) {
+    return AppTheme.isDarkMode(context)
+        ? const Color(0xFFFF9F0A) // System Orange Dark
+        : const Color(0xFFFF9500); // System Orange Light
+  }
+
+  Widget _buildAvatar(String url) {
+    return SvgPicture.network(
+      url,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      placeholderBuilder: (_) => Center(
+        child: CupertinoActivityIndicator(
+          color: AppTheme.isDarkMode(context)
+              ? AppTheme.primaryColor
+              : AppTheme.primaryDarkColor,
+        ),
+      ),
+      errorBuilder: (context, error, stackTrace) {
+        return Center(
+          child: Icon(
+            CupertinoIcons.person_fill,
+            size: 50,
+            color: AppTheme.iconColor(context),
+          ),
+        );
+      },
     );
   }
 }

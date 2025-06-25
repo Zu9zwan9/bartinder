@@ -9,10 +9,7 @@ import '../theme/theme.dart';
 class UserCard extends StatelessWidget {
   final User user;
 
-  const UserCard({
-    super.key,
-    required this.user,
-  });
+  const UserCard({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +18,7 @@ class UserCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Color.fromRGBO(0, 0, 0, 0.1),
             blurRadius: 8,
             spreadRadius: 2,
           ),
@@ -38,8 +35,14 @@ class UserCard extends StatelessWidget {
               width: double.infinity,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
+                final Color primaryWithOpacity = Color.fromRGBO(
+                  (AppTheme.primaryColor.r * 255.0).round() & 0xff,
+                  (AppTheme.primaryColor.g * 255.0).round() & 0xff,
+                  (AppTheme.primaryColor.b * 255.0).round() & 0xff,
+                  0.3,
+                );
                 return Container(
-                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  color: primaryWithOpacity,
                   child: const Center(
                     child: Icon(
                       CupertinoIcons.person_fill,
@@ -67,16 +70,16 @@ class UserCard extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.3),
+                    Color.fromRGBO(255, 255, 255, 0.1),
+                    Color.fromRGBO(255, 255, 255, 0.3),
                   ],
                 ),
                 borderGradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.1),
+                    Color.fromRGBO(255, 255, 255, 0.1),
+                    Color.fromRGBO(255, 255, 255, 0.1),
                   ],
                 ),
                 child: Padding(
@@ -129,7 +132,7 @@ class UserCard extends StatelessWidget {
                           children: [
                             Icon(
                               CupertinoIcons.location_fill,
-                              color: AppTheme.successColor,
+                              color: AppTheme.successColor(context),
                               size: 16,
                             ),
                             const SizedBox(width: 4),
@@ -180,16 +183,36 @@ class UserCard extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppTheme.primaryColor.withOpacity(0.2),
-                        AppTheme.primaryColor.withOpacity(0.4),
+                        Color.fromRGBO(
+                          (AppTheme.primaryColor.r * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.g * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.b * 255.0).round() & 0xff,
+                          0.2,
+                        ),
+                        Color.fromRGBO(
+                          (AppTheme.primaryColor.r * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.g * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.b * 255.0).round() & 0xff,
+                          0.4,
+                        ),
                       ],
                     ),
                     borderGradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AppTheme.primaryColor.withOpacity(0.2),
-                        AppTheme.primaryColor.withOpacity(0.2),
+                        Color.fromRGBO(
+                          (AppTheme.primaryColor.r * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.g * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.b * 255.0).round() & 0xff,
+                          0.2,
+                        ),
+                        Color.fromRGBO(
+                          (AppTheme.primaryColor.r * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.g * 255.0).round() & 0xff,
+                          (AppTheme.primaryColor.b * 255.0).round() & 0xff,
+                          0.2,
+                        ),
                       ],
                     ),
                     child: Center(

@@ -42,7 +42,7 @@ class BarCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: AppTheme.primaryColor.withOpacity(0.2),
+                    color: AppTheme.primaryColor.withAlpha(51),
                     child: const Center(
                       child: Icon(
                         CupertinoIcons.photo,
@@ -110,7 +110,9 @@ class BarCard extends StatelessWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
+                                color: Colors.black.withAlpha(
+                                  153,
+                                ), // Using withAlpha instead of withOpacity
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -174,7 +176,7 @@ class BarCard extends StatelessWidget {
                                 label: bar.discountPercentage != null
                                     ? '${bar.discountPercentage}% Off'
                                     : 'Discount',
-                                color: AppTheme.successColor,
+                                color: AppTheme.successColor(context),
                               ),
                           ],
                         ),

@@ -1,12 +1,13 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../blocs/matches/matches_bloc.dart';
 import '../blocs/matches/matches_event.dart';
 import '../blocs/matches/matches_state.dart';
-import '../../domain/entities/user.dart';
+import '../theme/theme.dart';
+import 'chat_screen.dart';
 
 /// Screen showing user's matches
 class MatchesScreen extends StatefulWidget {
@@ -23,7 +24,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
   @override
   void initState() {
     super.initState();
-    _matchesBloc = MatchesBloc.withDefaultDependencies()..add(const LoadMatches());
+    _matchesBloc = MatchesBloc.withDefaultDependencies()
+      ..add(const LoadMatches());
   }
 
   @override
@@ -38,8 +40,18 @@ class _MatchesScreenState extends State<MatchesScreen> {
     return BlocProvider.value(
       value: _matchesBloc,
       child: CupertinoPageScaffold(
-        navigationBar: const CupertinoNavigationBar(
-          middle: Text('Matches'),
+        backgroundColor: AppTheme.backgroundColor(context),
+        navigationBar: CupertinoNavigationBar(
+          middle: Text(
+            'Matches',
+            style: AppTheme.navTitle.copyWith(
+              color: AppTheme.textColor(context),
+            ),
+          ),
+          backgroundColor: AppTheme.isDarkMode(context)
+              ? AppTheme.darkCardColor
+              : Colors.white,
+          border: null,
         ),
         child: SafeArea(
           child: BlocConsumer<MatchesBloc, MatchesState>(
@@ -48,47 +60,111 @@ class _MatchesScreenState extends State<MatchesScreen> {
                 showCupertinoDialog(
                   context: context,
                   builder: (_) => CupertinoAlertDialog(
-                    title: const Text('Message Sent'),
-                    content: const Text('Your message has been sent!'),
-                    actions: [CupertinoDialogAction(
-                      child: const Text('OK'),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )],
+                    title: Text(
+                      'Message Sent',
+                      style: AppTheme.subtitleStyle.copyWith(
+                        color: AppTheme.textColor(context),
+                      ),
+                    ),
+                    content: Text(
+                      'Your message has been sent!',
+                      style: AppTheme.bodyStyle.copyWith(
+                        color: AppTheme.textColor(context),
+                      ),
+                    ),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: Text(
+                          'OK',
+                          style: AppTheme.buttonStyle.copyWith(
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
                   ),
                 );
               } else if (state is InviteSent) {
                 showCupertinoDialog(
                   context: context,
                   builder: (_) => CupertinoAlertDialog(
-                    title: const Text('Invitation Sent'),
-                    content: Text('Invited to ${state.barName}!'),
-                    actions: [CupertinoDialogAction(
-                      child: const Text('OK'),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )],
+                    title: Text(
+                      'Invitation Sent',
+                      style: AppTheme.subtitleStyle.copyWith(
+                        color: AppTheme.textColor(context),
+                      ),
+                    ),
+                    content: Text(
+                      'Invited to ${state.barName}!',
+                      style: AppTheme.bodyStyle.copyWith(
+                        color: AppTheme.textColor(context),
+                      ),
+                    ),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: Text(
+                          'OK',
+                          style: AppTheme.buttonStyle.copyWith(
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
                   ),
                 );
               } else if (state is MatchesError) {
                 showCupertinoDialog(
                   context: context,
                   builder: (_) => CupertinoAlertDialog(
-                    title: const Text('Error'),
-                    content: Text(state.message),
-                    actions: [CupertinoDialogAction(
-                      child: const Text('OK'),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )],
+                    title: Text(
+                      'Error',
+                      style: AppTheme.subtitleStyle.copyWith(
+                        color: AppTheme.textColor(context),
+                      ),
+                    ),
+                    content: Text(
+                      state.message,
+                      style: AppTheme.bodyStyle.copyWith(
+                        color: AppTheme.textColor(context),
+                      ),
+                    ),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: Text(
+                          'OK',
+                          style: AppTheme.buttonStyle.copyWith(
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
                   ),
                 );
               }
             },
             builder: (context, state) {
               if (state is MatchesLoading) {
-                return const Center(child: CupertinoActivityIndicator());
+                return Center(
+                  child: CupertinoActivityIndicator(
+                    color: AppTheme.isDarkMode(context)
+                        ? AppTheme.primaryColor
+                        : AppTheme.primaryDarkColor,
+                  ),
+                );
               } else if (state is MatchesLoaded) {
                 final matches = state.matches;
                 if (matches.isEmpty) {
-                  return const Center(child: Text('No matches yet.'));
+                  return Center(
+                    child: Text(
+                      'No matches yet.',
+                      style: AppTheme.bodyStyle.copyWith(
+                        color: AppTheme.secondaryTextColor(context),
+                      ),
+                    ),
+                  );
                 }
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -99,42 +175,150 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: CupertinoColors.systemGrey6,
+                        color: AppTheme.cardColor(context),
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.isDarkMode(context)
+                                ? Colors.black.withOpacity(0.2)
+                                : Colors.black.withOpacity(0.05),
+                            offset: const Offset(0, 1),
+                            blurRadius: 3,
+                            spreadRadius: 0,
+                          ),
+                        ],
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(user.photoUrl),
-                            radius: 24,
+                          Builder(
+                            builder: (context) {
+                              final url = user.photoUrl;
+                              final hasPhoto = url.isNotEmpty;
+                              final isSvg =
+                                  hasPhoto &&
+                                  url.toLowerCase().endsWith('.svg');
+
+                              return Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.isDarkMode(context)
+                                      ? AppTheme.systemGray4(context)
+                                      : AppTheme.systemGray5(context),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: hasPhoto
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(24),
+                                        child: isSvg
+                                            ? SvgPicture.network(
+                                                url,
+                                                fit: BoxFit.cover,
+                                                placeholderBuilder:
+                                                    (
+                                                      BuildContext context,
+                                                    ) => Center(
+                                                      child: CupertinoActivityIndicator(
+                                                        color:
+                                                            AppTheme.iconColor(
+                                                              context,
+                                                            ),
+                                                      ),
+                                                    ),
+                                              )
+                                            : Image.network(
+                                                url,
+                                                fit: BoxFit.cover,
+                                                loadingBuilder:
+                                                    (
+                                                      context,
+                                                      child,
+                                                      loadingProgress,
+                                                    ) {
+                                                      if (loadingProgress ==
+                                                          null)
+                                                        return child;
+                                                      return Center(
+                                                        child: CupertinoActivityIndicator(
+                                                          color:
+                                                              AppTheme.iconColor(
+                                                                context,
+                                                              ),
+                                                        ),
+                                                      );
+                                                    },
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) {
+                                                      return Icon(
+                                                        CupertinoIcons
+                                                            .person_fill,
+                                                        size: 24,
+                                                        color:
+                                                            AppTheme.iconColor(
+                                                              context,
+                                                            ),
+                                                      );
+                                                    },
+                                              ),
+                                      )
+                                    : Icon(
+                                        CupertinoIcons.person_fill,
+                                        size: 24,
+                                        color: AppTheme.iconColor(context),
+                                      ),
+                              );
+                            },
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('${user.name}, ${user.age}',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: CupertinoColors.black)),
+                                Text(
+                                  '${user.name}, ${user.age}',
+                                  style: AppTheme.headline.copyWith(
+                                    color: AppTheme.textColor(context),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text(user.favoriteBeer,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: CupertinoColors.systemGrey)),
+                                Text(
+                                  user.favoriteBeer,
+                                  style: AppTheme.subhead.copyWith(
+                                    color: AppTheme.secondaryTextColor(context),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           CupertinoButton(
                             padding: EdgeInsets.zero,
-                            child: const Icon(CupertinoIcons.chat_bubble_2_fill),
-                            onPressed: () => _showMessageDialog(user),
+                            child: Icon(
+                              CupertinoIcons.chat_bubble_2_fill,
+                              color: AppTheme.primaryColor,
+                              size: 26,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                CupertinoPageRoute(
+                                  builder: (_) => ChatScreen(matchedUser: user),
+                                ),
+                              );
+                            },
                           ),
                           CupertinoButton(
                             padding: EdgeInsets.zero,
-                            child: const Icon(CupertinoIcons.location_solid),
-                            onPressed: () => _matchesBloc.add(InviteToBar(user.id, '1')),
+                            child: Icon(
+                              CupertinoIcons.location_solid,
+                              color: AppTheme.accentColor,
+                              size: 26,
+                            ),
+                            onPressed: () =>
+                                _matchesBloc.add(InviteToBar(user.id, '1')),
                           ),
                         ],
                       ),
@@ -142,40 +326,16 @@ class _MatchesScreenState extends State<MatchesScreen> {
                   },
                 );
               }
-              return const Center(child: CupertinoActivityIndicator());
+              return Center(
+                child: CupertinoActivityIndicator(
+                  color: AppTheme.isDarkMode(context)
+                      ? AppTheme.primaryColor
+                      : AppTheme.primaryDarkColor,
+                ),
+              );
             },
           ),
         ),
-      ),
-    );
-  }
-
-  void _showMessageDialog(User user) {
-    showCupertinoDialog(
-      context: context,
-      builder: (ctx) => CupertinoAlertDialog(
-        title: Text('Message ${user.name}'),
-        content: CupertinoTextField(
-          controller: _messageController,
-          placeholder: 'Type your message',
-        ),
-        actions: [
-          CupertinoDialogAction(
-            child: const Text('Send'),
-            onPressed: () {
-              final message = _messageController.text.trim();
-              if (message.isNotEmpty) {
-                _matchesBloc.add(SendMessage(user.id, message));
-              }
-              _messageController.clear();
-              Navigator.of(ctx).pop();
-            },
-          ),
-          CupertinoDialogAction(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(ctx).pop(),
-          ),
-        ],
       ),
     );
   }

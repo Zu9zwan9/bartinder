@@ -24,7 +24,8 @@ class MockBarDataSource {
           Event(
             id: '101',
             name: 'IPA Tasting Night',
-            description: 'Sample our new collection of IPAs from local breweries',
+            description:
+                'Sample our new collection of IPAs from local breweries',
             startTime: DateTime.now().add(const Duration(hours: 2)),
             endTime: DateTime.now().add(const Duration(hours: 5)),
           ),
@@ -37,8 +38,10 @@ class MockBarDataSource {
         latitude: 50.447853,
         longitude: 30.524506,
         distance: 0.5,
-        photoUrl: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b',
-        description: 'Authentic German beer hall with traditional food and music.',
+        photoUrl:
+            'https://images.unsplash.com/photo-1514933651103-005eec06c04b',
+        description:
+            'Authentic German beer hall with traditional food and music.',
         beerTypes: ['Pilsner', 'Hefeweizen', 'Dunkel', 'Bock'],
         hasDiscount: true,
         discountPercentage: 15,
@@ -62,8 +65,10 @@ class MockBarDataSource {
         latitude: 50.444029,
         longitude: 30.505902,
         distance: 2.0,
-        photoUrl: 'https://images.unsplash.com/photo-1485686531765-ba63b07845a7',
-        description: 'Specializing in Czech and German pilsners with beer-paired menu.',
+        photoUrl:
+            'https://images.unsplash.com/photo-1485686531765-ba63b07845a7',
+        description:
+            'Specializing in Czech and German pilsners with beer-paired menu.',
         beerTypes: ['Pilsner', 'Lager', 'Kölsch'],
         hasDiscount: false,
         plannedVisitorsCount: 3,
@@ -79,7 +84,8 @@ class MockBarDataSource {
         longitude: 30.516233,
         distance: 1.8,
         photoUrl: 'https://images.unsplash.com/photo-1559526324-593bc073d938',
-        description: 'Local brewery specializing in dark beers and seasonal specialties.',
+        description:
+            'Local brewery specializing in dark beers and seasonal specialties.',
         beerTypes: ['Stout', 'Porter', 'Brown Ale', 'Black IPA'],
         hasDiscount: true,
         discountPercentage: 20,
@@ -112,7 +118,12 @@ class MockBarDataSource {
         distance: 3.2,
         photoUrl: 'https://images.unsplash.com/photo-1555658636-6e4a36218be7',
         description: 'Cozy spot with board games and a focus on wheat beers.',
-        beerTypes: ['Hefeweizen', 'Witbier', 'American Wheat', 'Berliner Weisse'],
+        beerTypes: [
+          'Hefeweizen',
+          'Witbier',
+          'American Wheat',
+          'Berliner Weisse',
+        ],
         hasDiscount: false,
         plannedVisitorsCount: 4,
         crowdLevel: 'Medium',

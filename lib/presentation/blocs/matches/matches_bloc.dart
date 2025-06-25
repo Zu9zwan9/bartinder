@@ -1,21 +1,21 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../data/repositories/supabase_user_repository_impl.dart';
 import '../../../data/repositories/bar_repository_impl.dart';
-import '../../../data/repositories/user_repository_impl.dart';
 import 'matches_event.dart';
 import 'matches_state.dart';
 
 /// BLoC for the Matches page
 class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
-  final UserRepositoryImpl _userRepository;
+  final SupabaseUserRepositoryImpl _userRepository;
   final BarRepositoryImpl _barRepository;
 
   MatchesBloc({
-    required UserRepositoryImpl userRepository,
+    required SupabaseUserRepositoryImpl userRepository,
     required BarRepositoryImpl barRepository,
-  })  : _userRepository = userRepository,
-        _barRepository = barRepository,
-        super(const MatchesInitial()) {
+  }) : _userRepository = userRepository,
+       _barRepository = barRepository,
+       super(const MatchesInitial()) {
     on<LoadPotentialMatches>(_onLoadPotentialMatches);
     on<RefreshPotentialMatches>(_onRefreshPotentialMatches);
     on<LikeUser>(_onLikeUser);
@@ -28,7 +28,7 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
   /// Convenience constructor with default dependencies
   factory MatchesBloc.withDefaultDependencies() {
     return MatchesBloc(
-      userRepository: UserRepositoryImpl(),
+      userRepository: SupabaseUserRepositoryImpl(),
       barRepository: BarRepositoryImpl(),
     );
   }
@@ -54,14 +54,13 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
       final users = await _userRepository.getUsers();
       emit(PotentialMatchesLoaded(users));
     } catch (e) {
-      emit(MatchesError('Failed to refresh potential matches: ${e.toString()}'));
+      emit(
+        MatchesError('Failed to refresh potential matches: ${e.toString()}'),
+      );
     }
   }
 
-  Future<void> _onLikeUser(
-    LikeUser event,
-    Emitter<MatchesState> emit,
-  ) async {
+  Future<void> _onLikeUser(LikeUser event, Emitter<MatchesState> emit) async {
     try {
       await _userRepository.likeUser(event.userId);
 
@@ -70,10 +69,11 @@ class MatchesBloc extends Bloc<MatchesEvent, MatchesState> {
       if (matches.contains(event.userId)) {
         // Get the user details
         final users = await _userRepository.getUsers();
-final matchedUser = users.where((user) => user.id == event.userId).isNotEmpty
-    ? users.firstWhere((user) => user.id == event.userId)
-    : null;
-if (matchedUser != null) {
+        final matchedUser =
+            users.where((user) => user.id == event.userId).isNotEmpty
+            ? users.firstWhere((user) => user.id == event.userId)
+            : null;
+        if (matchedUser != null) {
           emit(MatchFound(matchedUser));
         }
       }
@@ -109,7 +109,9 @@ if (matchedUser != null) {
       final allUsers = await _userRepository.getUsers();
 
       // Filter users to get only matches
-      final matches = allUsers.where((user) => matchIds.contains(user.id)).toList();
+      final matches = allUsers
+          .where((user) => matchIds.contains(user.id))
+          .toList();
       emit(MatchesLoaded(matches));
     } catch (e) {
       emit(MatchesError('Failed to load matches: ${e.toString()}'));

@@ -27,13 +27,13 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     required DislikeBarUseCase dislikeBarUseCase,
     required CheckInBarUseCase checkInBarUseCase,
     required GeolocationService geolocationService,
-  })  : _getBarsUseCase = getBarsUseCase,
-        _getBarByIdUseCase = getBarByIdUseCase,
-        _likeBarUseCase = likeBarUseCase,
-        _dislikeBarUseCase = dislikeBarUseCase,
-        _checkInBarUseCase = checkInBarUseCase,
-        _geolocationService = geolocationService,
-        super(const BarsInitial()) {
+  }) : _getBarsUseCase = getBarsUseCase,
+       _getBarByIdUseCase = getBarByIdUseCase,
+       _likeBarUseCase = likeBarUseCase,
+       _dislikeBarUseCase = dislikeBarUseCase,
+       _checkInBarUseCase = checkInBarUseCase,
+       _geolocationService = geolocationService,
+       super(const BarsInitial()) {
     on<LoadBars>(_onLoadBars);
     on<RefreshBars>(_onRefreshBars);
     on<LikeBar>(_onLikeBar);
@@ -61,7 +61,8 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     emit(const BarsLoading());
     try {
       // Check location services and permissions
-      final serviceEnabled = await _geolocationService.isLocationServiceEnabled();
+      final serviceEnabled = await _geolocationService
+          .isLocationServiceEnabled();
       if (!serviceEnabled) {
         emit(const LocationServicesDisabled());
         return;
@@ -82,7 +83,10 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     }
   }
 
-  Future<void> _onRefreshBars(RefreshBars event, Emitter<BarsState> emit) async {
+  Future<void> _onRefreshBars(
+    RefreshBars event,
+    Emitter<BarsState> emit,
+  ) async {
     try {
       // Get current position
       final position = await _geolocationService.getCurrentPosition();
@@ -141,7 +145,10 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     }
   }
 
-  Future<void> _onViewBarDetails(ViewBarDetails event, Emitter<BarsState> emit) async {
+  Future<void> _onViewBarDetails(
+    ViewBarDetails event,
+    Emitter<BarsState> emit,
+  ) async {
     try {
       final bar = await _getBarByIdUseCase.execute(event.barId);
       if (bar != null) {

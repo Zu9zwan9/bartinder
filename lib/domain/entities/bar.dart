@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-/// Represents a bar or venue in the beerTinder app
 class Bar extends Equatable {
   final String id;
   final String name;
@@ -38,22 +37,22 @@ class Bar extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        address,
-        latitude,
-        longitude,
-        distance,
-        photoUrl,
-        description,
-        beerTypes,
-        hasDiscount,
-        discountPercentage,
-        plannedVisitorsCount,
-        crowdLevel,
-        usersHeadingThere,
-        events,
-      ];
+    id,
+    name,
+    address,
+    latitude,
+    longitude,
+    distance,
+    photoUrl,
+    description,
+    beerTypes,
+    hasDiscount,
+    discountPercentage,
+    plannedVisitorsCount,
+    crowdLevel,
+    usersHeadingThere,
+    events,
+  ];
 }
 
 /// Represents an event at a bar
