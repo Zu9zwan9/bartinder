@@ -60,24 +60,28 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
   Future<void> _onLoadBars(LoadBars event, Emitter<BarsState> emit) async {
     emit(const BarsLoading());
     try {
-      // Check location services and permissions
-      final serviceEnabled = await _geolocationService
-          .isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        emit(const LocationServicesDisabled());
+      // Get the current location of the user
+      final Position? position = await _geolocationService.getCurrentPosition();
+      if (position == null) {
+        emit(const BarsError('Could not get current location'));
         return;
       }
 
-      final permission = await _geolocationService.requestPermission();
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        emit(const LocationPermissionDenied());
-        return;
-      }
-
-      // Get bars
+      // Fetch the list of bars
       final bars = await _getBarsUseCase.execute();
-      emit(BarsLoaded(bars));
+
+      // Calculate the distance to each bar dynamically
+      final barsWithDistance = bars.map((bar) {
+        final distance = Geolocator.distanceBetween(
+          position.latitude,
+          position.longitude,
+          bar.latitude,
+          bar.longitude,
+        ) / 1000; // Convert meters to kilometers
+        return bar.copyWith(distance: distance);
+      }).toList();
+
+      emit(BarsLoaded(barsWithDistance)); // Pass the updated list of bars
     } catch (e) {
       emit(BarsError('Failed to load bars: ${e.toString()}'));
     }

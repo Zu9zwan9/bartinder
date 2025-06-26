@@ -35,6 +35,30 @@ class Bar extends Equatable {
     this.events,
   });
 
+  /// Creates a copy of the current [Bar] instance with the given fields replaced by new values.
+  /// Only the [distance] field is mutable.
+  Bar copyWith({
+    double? distance,
+  }) {
+    return Bar(
+      id: id,
+      name: name,
+      address: address,
+      latitude: latitude,
+      longitude: longitude,
+      distance: distance ?? this.distance,
+      photoUrl: photoUrl,
+      description: description,
+      beerTypes: beerTypes,
+      hasDiscount: hasDiscount,
+      discountPercentage: discountPercentage,
+      plannedVisitorsCount: plannedVisitorsCount,
+      crowdLevel: crowdLevel,
+      usersHeadingThere: usersHeadingThere,
+      events: events,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,

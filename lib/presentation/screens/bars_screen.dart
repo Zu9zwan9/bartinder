@@ -167,6 +167,7 @@ class _BarsScreenState extends State<BarsScreen> {
                           bar: bars[index],
                           onTap: () =>
                               _barsBloc.add(ViewBarDetails(bars[index].id)),
+                          distance: bars[index].distance, // Добавлено расстояние
                         );
                       },
                 ),
