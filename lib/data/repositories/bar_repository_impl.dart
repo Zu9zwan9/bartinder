@@ -1,8 +1,8 @@
+import 'package:sipswipe/data/repositories/supabase_bar_data_source.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/bar.dart';
 import '../../domain/repositories/bar_repository.dart';
-import '../datasources/supabase_bar_data_source.dart';
 import '../services/auth_service.dart';
 
 /// Implementation of the BarRepository interface using Supabase database
