@@ -76,7 +76,10 @@ class _BarsScreenState extends State<BarsScreen> {
               ),
               CupertinoButton(
                 padding: EdgeInsets.zero,
-                child: Icon(CupertinoIcons.refresh, color: AppTheme.primaryColor),
+                child: Icon(
+                  CupertinoIcons.refresh,
+                  color: AppTheme.primaryColor,
+                ),
                 onPressed: () => _barsBloc.add(const RefreshBars()),
               ),
             ],
@@ -152,45 +155,43 @@ class _BarsScreenState extends State<BarsScreen> {
             _barsBloc.add(UpdateDistanceFilter(distance));
           },
         ),
-        Expanded(
-          child: _buildBarsList(context, bars),
-        ),
+        Expanded(child: _buildBarsList(context, bars)),
       ],
     );
   }
 
   Widget _buildBarsList(BuildContext context, List<Bar> bars) {
-    // Handle empty bars list - should not happen due to upstream checks, but safety first
     if (bars.isEmpty) {
       return _buildEmptyState();
     }
 
-    // Calculate safe layout dimensions
     final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
     final screenWidth = mediaQuery.size.width;
+    final navBarHeight = CupertinoNavigationBar().preferredSize.height;
     final bottomPadding = mediaQuery.padding.bottom;
+    final statusBarHeight = mediaQuery.padding.top;
 
-    // Fixed height for action area - matches HomeScreen
     const actionAreaHeight = 100.0;
-
-    // Calculate the space needed for the heading users section
-    final bool hasHeadingUsers =
+    final availableHeight =
+        screenHeight - navBarHeight - statusBarHeight - bottomPadding;
+    final cardAreaHeight = availableHeight * 0.75;
+    final numberOfCardsDisplayed = math.min(3, bars.length);
+    final hasHeadingUsers =
         bars.isNotEmpty && bars[0].usersHeadingThere.isNotEmpty;
     final headingUsersHeight = hasHeadingUsers ? 80.0 : 0.0;
-
-    // Calculate numberOfCardsDisplayed based on available bars
-    // Ensure it's at least 1 and no more than the number of bars available
-    final numberOfCardsDisplayed = math.min(3, bars.length).clamp(1, bars.length);
 
     return Stack(
       children: [
         Column(
           children: [
-            // Card swiper section - use Expanded to take available space
-            Expanded(
+            SizedBox(
+              height: cardAreaHeight,
+              width: screenWidth,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: CardSwiper(
+                  key: ValueKey(bars.length),
                   controller: _cardController,
                   cardsCount: bars.length,
                   onSwipe: (prev, curr, dir) {
@@ -211,49 +212,18 @@ class _BarsScreenState extends State<BarsScreen> {
                           bar: bars[index],
                           onTap: () =>
                               _barsBloc.add(ViewBarDetails(bars[index].id)),
-                          distance: bars[index].distance, // Добавлено расстояние
+                          distance: bars[index].distance,
                         );
                       },
                 ),
               ),
             ),
-
-            // Heading users section if applicable
-            if (hasHeadingUsers)
-              Container(
-                height: headingUsersHeight,
-                width: screenWidth,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'People heading to ${bars[0].name}:',
-                      style: AppTheme.subtitleStyle.copyWith(
-                        color: AppTheme.textColor(context),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Expanded(
-                      child: HeadingUsersList(
-                        userIds: bars[0].usersHeadingThere,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Space for action buttons - fixed height to prevent overflow
-            SizedBox(height: actionAreaHeight + 20),
+            SizedBox(height: actionAreaHeight),
+            const Spacer(),
           ],
         ),
-
-        // Action buttons section positioned at bottom of screen
         Positioned(
-          bottom: bottomPadding + 45, // Moved buttons 20 pixels up
+          bottom: bottomPadding + 45,
           left: 0,
           right: 0,
           child: Container(
@@ -264,7 +234,6 @@ class _BarsScreenState extends State<BarsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Dislike button
                 Expanded(
                   child: _buildActionButton(
                     icon: CupertinoIcons.xmark_circle_fill,
@@ -273,11 +242,7 @@ class _BarsScreenState extends State<BarsScreen> {
                         _cardController.swipe(CardSwiperDirection.left),
                   ),
                 ),
-
-                const SizedBox(
-                  width: 32,
-                ), // Same space as HomeScreen for consistency
-                // Like button
+                const SizedBox(width: 32),
                 Expanded(
                   child: _buildActionButton(
                     icon: CupertinoIcons.heart_fill,
@@ -299,28 +264,23 @@ class _BarsScreenState extends State<BarsScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Center(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: AppTheme.cardColor(context),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.isDarkMode(context)
-                    ? Colors.black.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                spreadRadius: 1,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(icon, color: color, size: 36),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppTheme.cardColor(context),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(26),
+              blurRadius: 8,
+              spreadRadius: 2,
+            ),
+          ],
         ),
+        child: Icon(icon, color: color, size: 32),
       ),
     );
   }
