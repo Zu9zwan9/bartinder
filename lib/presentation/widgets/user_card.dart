@@ -126,8 +126,27 @@ class UserCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
 
-                      // Last checked in location
-                      if (user.lastCheckedInLocation != null)
+                      // Distance from current user
+                      if (user.distance != null)
+                        Row(
+                          children: [
+                            Icon(
+                              CupertinoIcons.location_fill,
+                              color: AppTheme.successColor(context),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDistance(user.distance!),
+                              style: AppTheme.bodyStyle.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        )
+                      // Fallback to last checked in location if distance is not available
+                      else if (user.lastCheckedInLocation != null)
                         Row(
                           children: [
                             Icon(
@@ -232,5 +251,20 @@ class UserCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Helper method to format distance for display
+  String _formatDistance(double distanceKm) {
+    if (distanceKm < 1.0) {
+      // Show in meters for distances less than 1km
+      final meters = (distanceKm * 1000).round();
+      return '${meters}m away';
+    } else if (distanceKm < 10.0) {
+      // Show one decimal place for distances less than 10km
+      return '${distanceKm.toStringAsFixed(1)}km away';
+    } else {
+      // Show whole numbers for distances 10km and above
+      return '${distanceKm.round()}km away';
+    }
   }
 }

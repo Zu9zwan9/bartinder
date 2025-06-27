@@ -3,15 +3,21 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../data/repositories/supabase_user_repository_impl.dart';
+import '../../data/repositories/location_repository.dart';
+import '../../core/services/location_service.dart';
+import '../../data/services/auth_service.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/entities/distance_filter.dart';
 import '../blocs/user_swipe/user_swipe_bloc.dart';
 import '../blocs/user_swipe/user_swipe_event.dart';
 import '../blocs/user_swipe/user_swipe_state.dart';
 import '../theme/theme.dart';
 import '../widgets/match_dialog.dart';
 import '../widgets/user_card.dart';
+import '../widgets/distance_filter_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,12 +29,115 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final CardSwiperController _cardController = CardSwiperController();
   late final UserSwipeBloc _userSwipeBloc;
+  final LocationService _locationService = LocationService();
+
+  DistanceFilter _currentDistanceFilter = DistanceFilter.inMyCity;
+  Position? _currentPosition;
+  bool _isLoadingLocation = false;
 
   @override
   void initState() {
     super.initState();
-    _userSwipeBloc = UserSwipeBloc(userRepository: SupabaseUserRepositoryImpl())
-      ..add(const LoadUsers());
+    _userSwipeBloc = UserSwipeBloc(
+      userRepository: SupabaseUserRepositoryImpl(),
+      locationRepository: LocationRepository(),
+      locationService: _locationService,
+    );
+    _initializeLocation();
+  }
+
+  /// Initialize location and load users based on location
+  Future<void> _initializeLocation() async {
+    setState(() {
+      _isLoadingLocation = true;
+    });
+
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (position != null) {
+        setState(() {
+          _currentPosition = position;
+          _isLoadingLocation = false;
+        });
+
+        // Load users with location filter
+        _loadUsersWithLocationFilter();
+      } else {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        // Fallback to loading all users if location is not available
+        _userSwipeBloc.add(const LoadUsers());
+        _showLocationPermissionDialog();
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingLocation = false;
+      });
+      // Fallback to loading all users
+      _userSwipeBloc.add(const LoadUsers());
+    }
+  }
+
+  /// Load users with current location filter
+  void _loadUsersWithLocationFilter() {
+    if (_currentPosition != null) {
+      final currentUserId = AuthService.currentUserId;
+      if (currentUserId != null) {
+        _userSwipeBloc.add(LoadUsersWithLocationFilter(
+          latitude: _currentPosition!.latitude,
+          longitude: _currentPosition!.longitude,
+          distanceFilter: _currentDistanceFilter,
+          currentUserId: currentUserId,
+        ));
+      } else {
+        // User not authenticated, show error or redirect to login
+        _userSwipeBloc.add(const LoadUsers()); // Fallback to loading all users
+      }
+    }
+  }
+
+  /// Show distance filter sheet
+  Future<void> _showDistanceFilter() async {
+    final selectedFilter = await DistanceFilterSheet.show(
+      context,
+      _currentDistanceFilter,
+    );
+
+    if (selectedFilter != null && selectedFilter != _currentDistanceFilter) {
+      setState(() {
+        _currentDistanceFilter = selectedFilter;
+      });
+      _loadUsersWithLocationFilter();
+    }
+  }
+
+  /// Show location permission dialog
+  void _showLocationPermissionDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('Location Access'),
+        content: const Text(
+          'To show you people nearby, we need access to your location. '
+          'You can enable this in Settings or continue without location-based matching.',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('Continue Without'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text('Try Again'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _initializeLocation();
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -55,6 +164,48 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Distance filter button
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: _currentPosition != null ? _showDistanceFilter : null,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _currentPosition != null
+                        ? AppTheme.primaryColor.withOpacity(0.1)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        CupertinoIcons.location_fill,
+                        size: 16,
+                        color: _currentPosition != null
+                            ? AppTheme.primaryColor
+                            : Theme.of(context).disabledColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _currentDistanceFilter.displayName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _currentPosition != null
+                              ? AppTheme.primaryColor
+                              : Theme.of(context).disabledColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
           border: null, // Remove the border to reduce space
         ),
         child: SafeArea(
@@ -67,17 +218,71 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
             builder: (context, state) {
+              // Show location loading state
+              if (_isLoadingLocation) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CupertinoActivityIndicator(),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Getting your location...',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
               if (state is UserSwipeLoading) {
-                return const Center(child: CupertinoActivityIndicator());
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CupertinoActivityIndicator(),
+                      const SizedBox(height: 16),
+                      Text(
+                        _currentPosition != null
+                            ? 'Finding people ${_currentDistanceFilter.displayName.toLowerCase()}...'
+                            : 'Loading users...',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                );
               } else if (state is UserSwipeLoaded) {
                 return _buildSwipeCards(context, state.users);
               } else if (state is UserSwipeError) {
                 return Center(
-                  child: Text(
-                    'Error: ${state.message}',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        CupertinoIcons.exclamationmark_triangle,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error: ${state.message}',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      CupertinoButton(
+                        onPressed: () {
+                          if (_currentPosition != null) {
+                            _loadUsersWithLocationFilter();
+                          } else {
+                            _userSwipeBloc.add(const LoadUsers());
+                          }
+                        },
+                        child: const Text('Try Again'),
+                      ),
+                    ],
                   ),
                 );
               }
@@ -212,6 +417,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNoMoreCard() {
+    final String message = _currentPosition != null
+        ? 'No more beer buddies ${_currentDistanceFilter.displayName.toLowerCase()}'
+        : 'No more beer buddies nearby';
+
+    final String subtitle = _currentPosition != null
+        ? 'Try expanding your distance or check back later'
+        : 'Enable location to find people nearby';
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -229,22 +442,79 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              CupertinoIcons.person_2_fill,
+              _currentPosition != null
+                  ? CupertinoIcons.location_circle
+                  : CupertinoIcons.person_2_fill,
               size: 80,
               color: Theme.of(context).colorScheme.primary.withAlpha(128),
             ),
             const SizedBox(height: 16),
             Text(
-              'No more beer buddies nearby',
+              message,
               style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Pull to refresh',
+              subtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.secondary,
               ),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            // Action buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_currentPosition != null) ...[
+                  CupertinoButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                    onPressed: _showDistanceFilter,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(CupertinoIcons.slider_horizontal_3, size: 16),
+                        const SizedBox(width: 8),
+                        const Text('Change Filter', style: TextStyle(fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                CupertinoButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  onPressed: () {
+                    if (_currentPosition != null) {
+                      _loadUsersWithLocationFilter();
+                    } else {
+                      _initializeLocation();
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        CupertinoIcons.refresh,
+                        size: 16,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Refresh',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),

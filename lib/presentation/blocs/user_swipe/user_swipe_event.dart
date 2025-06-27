@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../domain/entities/user.dart';
+import '../../../domain/entities/distance_filter.dart';
 
 /// Events for the UserSwipeBloc
 abstract class UserSwipeEvent extends Equatable {
@@ -43,4 +44,32 @@ class MatchCreated extends UserSwipeEvent {
 
   @override
   List<Object?> get props => [matchedUser];
+}
+
+/// Event to load users based on location and distance filter
+class LoadUsersWithLocationFilter extends UserSwipeEvent {
+  final double latitude;
+  final double longitude;
+  final DistanceFilter distanceFilter;
+  final String currentUserId;
+
+  const LoadUsersWithLocationFilter({
+    required this.latitude,
+    required this.longitude,
+    required this.distanceFilter,
+    required this.currentUserId,
+  });
+
+  @override
+  List<Object?> get props => [latitude, longitude, distanceFilter, currentUserId];
+}
+
+/// Event to update distance filter
+class UpdateDistanceFilter extends UserSwipeEvent {
+  final DistanceFilter distanceFilter;
+
+  const UpdateDistanceFilter(this.distanceFilter);
+
+  @override
+  List<Object?> get props => [distanceFilter];
 }

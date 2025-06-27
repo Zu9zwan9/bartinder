@@ -54,7 +54,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           .execute(_matchId!)
           .listen(
             (messages) => add(MessagesUpdated(messages)),
-            onError: (error) => add(ChatStreamError(error.toString())),
+            onError: (error) => add(ChatStreamError(error?.toString() ?? 'Unknown error occurred')),
           );
     } catch (e) {
       emit(ChatError('Failed to load messages: ${e.toString()}'));
@@ -65,6 +65,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     // Cast dynamic to domain Message
     final msgs = event.messages.cast<Message>();
     emit(ChatLoaded(msgs));
+  }
+
+  void _onChatStreamError(ChatStreamError event, Emitter<ChatState> emit) {
+    emit(ChatError(event.error));
   }
 
   Future<void> _onSendTextMessage(
@@ -104,12 +108,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         emit(ChatLoaded(updated));
       }
     } catch (e) {
-      emit(ChatError('Failed to send message: ${e.toString()}'));
+      final errorMessage = e.toString().isNotEmpty ? e.toString() : 'Failed to send message due to an unknown error';
+      emit(ChatError(errorMessage));
     }
-  }
-
-  void _onChatStreamError(ChatStreamError event, Emitter<ChatState> emit) {
-    emit(ChatError(event.error));
   }
 
   /// Find the match ID from the likes table by looking for mutual likes

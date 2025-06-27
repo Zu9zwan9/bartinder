@@ -15,6 +15,7 @@ class User extends Equatable {
   final String? location; // PostGIS geography type as hex string
   final double? latitude;
   final double? longitude;
+  final double? distance; // Distance from current user in kilometers
   final String? email;
   final String? phone;
   final String? avatarUrl;
@@ -39,6 +40,7 @@ class User extends Equatable {
     this.location,
     this.latitude,
     this.longitude,
+    this.distance,
     this.email,
     this.phone,
     this.avatarUrl,
@@ -65,6 +67,7 @@ class User extends Equatable {
     location,
     latitude,
     longitude,
+    distance,
     email,
     phone,
     avatarUrl,

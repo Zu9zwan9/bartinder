@@ -46,3 +46,4 @@ app.*.map.json
 /lib/google-services.json
 /.env
 /test/
+/lib/data/datasources/
