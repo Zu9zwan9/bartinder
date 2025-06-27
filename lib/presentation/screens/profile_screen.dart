@@ -188,8 +188,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
         if (mounted) _showSuccessMessage('Avatar updated successfully!');
       } else {
-        if (mounted)
+        if (mounted) {
           _showErrorMessage('Failed to update avatar. Please try again.');
+        }
       }
     } catch (e) {
       if (mounted) _showErrorMessage('An error occurred while updating avatar');

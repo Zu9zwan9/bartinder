@@ -90,6 +90,42 @@ class Message extends Equatable {
     'sent_at': sentAt?.toIso8601String(),
   };
 
+  Message copyWith({
+    String? id,
+    String? matchId,
+    String? senderId,
+    String? receiverId,
+    String? text,
+    String? mediaUrl,
+    String? topic,
+    String? extension,
+    String? event,
+    String? content,
+    Map<String, dynamic>? payload,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? insertedAt,
+    DateTime? sentAt,
+  }) {
+    return Message(
+      id: id ?? this.id,
+      matchId: matchId ?? this.matchId,
+      senderId: senderId ?? this.senderId,
+      receiverId: receiverId ?? this.receiverId,
+      text: text ?? this.text,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      topic: topic ?? this.topic,
+      extension: extension ?? this.extension,
+      event: event ?? this.event,
+      content: content ?? this.content,
+      payload: payload ?? this.payload,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      insertedAt: insertedAt ?? this.insertedAt,
+      sentAt: sentAt ?? this.sentAt,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,

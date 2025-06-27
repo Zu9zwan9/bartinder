@@ -35,6 +35,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MessagesUpdated>(_onMessagesUpdated);
     on<ChatStreamError>(_onChatStreamError);
     on<SendTextMessage>(_onSendTextMessage);
+    on<EditMessage>(_onEditMessage);
+    on<DeleteMessage>(_onDeleteMessage);
   }
 
   Future<void> _onLoadMessages(
@@ -110,6 +112,55 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       final errorMessage = e.toString().isNotEmpty ? e.toString() : 'Failed to send message due to an unknown error';
       emit(ChatError(errorMessage));
+    }
+  }
+
+  Future<void> _onEditMessage(
+    EditMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      if (_matchId == null) {
+        emit(const ChatError('No match found between users'));
+        return;
+      }
+      if (state is! ChatLoaded) return;
+      final messages = (state as ChatLoaded).messages;
+      final index = messages.indexWhere((m) => m.id == event.messageId);
+      if (index == -1) return;
+      final oldMsg = messages[index];
+      final editedMsg = oldMsg.copyWith(
+        text: event.newText,
+        content: event.newText,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      await SupabaseMessageRepositoryImpl().editMessage(editedMsg);
+      final updated = List<Message>.from(messages);
+      updated[index] = editedMsg;
+      emit(ChatLoaded(updated));
+    } catch (e) {
+      emit(ChatError('Failed to edit message: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onDeleteMessage(
+    DeleteMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    try {
+      if (_matchId == null) {
+        emit(const ChatError('No match found between users'));
+        return;
+      }
+      if (state is! ChatLoaded) return;
+      await SupabaseMessageRepositoryImpl().deleteMessage(event.messageId);
+      final updated = (state as ChatLoaded)
+          .messages
+          .where((m) => m.id != event.messageId)
+          .toList();
+      emit(ChatLoaded(updated));
+    } catch (e) {
+      emit(ChatError('Failed to delete message: ${e.toString()}'));
     }
   }
 

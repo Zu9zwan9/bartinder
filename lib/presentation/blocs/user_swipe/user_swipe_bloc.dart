@@ -4,7 +4,6 @@ import '../../../domain/repositories/user_repository.dart';
 import '../../../data/repositories/location_repository.dart';
 import '../../../core/services/location_service.dart';
 import '../../../domain/entities/user.dart';
-import '../../../domain/entities/distance_filter.dart';
 import 'user_swipe_event.dart';
 import 'user_swipe_state.dart';
 

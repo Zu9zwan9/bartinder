@@ -25,12 +25,34 @@ class SupabaseMessageRepositoryImpl implements MessageRepository {
   Future<void> sendMessage(Message message) async {
     final data = message.toJson()
       ..removeWhere((_, value) => value == null)
-      // Remove fields not present in DB schema
       ..remove('inserted_at')
       ..remove('updated_at');
-    final response = await _supabase.from('messages').insert(data);
-    if (response.error != null) {
-      throw Exception('Failed to send message: ${response.error!.message}');
+    try {
+      await _supabase.from('messages').insert(data);
+    } catch (e) {
+      throw Exception('Failed to send message: $e');
+    }
+  }
+
+  @override
+  Future<void> editMessage(Message message) async {
+    final data = message.toJson()
+      ..removeWhere((_, value) => value == null)
+      ..remove('inserted_at')
+      ..remove('updated_at');
+    try {
+      await _supabase.from('messages').update(data).eq('id', message.id);
+    } catch (e) {
+      throw Exception('Failed to edit message: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteMessage(String messageId) async {
+    try {
+      await _supabase.from('messages').delete().eq('id', messageId);
+    } catch (e) {
+      throw Exception('Failed to delete message: $e');
     }
   }
 }

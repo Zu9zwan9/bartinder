@@ -152,7 +152,7 @@ class SupabaseBarDataSource {
         description += ' with a ${rating.toStringAsFixed(1)} star rating';
       }
       if (partner && discount > 0) {
-        description += '. Partner location with ${discount}% discount for app users';
+        description += '. Partner location with $discount% discount for app users';
       } else if (partner) {
         description += '. Partner location with special offers';
       }

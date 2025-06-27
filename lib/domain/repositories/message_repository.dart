@@ -9,4 +9,10 @@ abstract class MessageRepository {
 
   /// Sends a message in a given match.
   Future<void> sendMessage(Message message);
+
+  /// Edits an existing message.
+  Future<void> editMessage(Message message);
+
+  /// Deletes a message by its ID.
+  Future<void> deleteMessage(String messageId);
 }

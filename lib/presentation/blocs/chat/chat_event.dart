@@ -40,3 +40,22 @@ class ChatStreamError extends ChatEvent {
   @override
   List<Object?> get props => [error];
 }
+
+/// Edit a message
+class EditMessage extends ChatEvent {
+  final String messageId;
+  final String newText;
+  const EditMessage({required this.messageId, required this.newText});
+
+  @override
+  List<Object?> get props => [messageId, newText];
+}
+
+/// Delete a message
+class DeleteMessage extends ChatEvent {
+  final String messageId;
+  const DeleteMessage(this.messageId);
+
+  @override
+  List<Object?> get props => [messageId];
+}

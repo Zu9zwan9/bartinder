@@ -236,8 +236,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
                                                       loadingProgress,
                                                     ) {
                                                       if (loadingProgress ==
-                                                          null)
+                                                          null) {
                                                         return child;
+                                                      }
                                                       return Center(
                                                         child: CupertinoActivityIndicator(
                                                           color:
