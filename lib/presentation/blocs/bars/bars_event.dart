@@ -57,3 +57,23 @@ class ViewBarDetails extends BarsEvent {
   @override
   List<Object?> get props => [barId];
 }
+
+/// Event to load bars within a specific distance
+class LoadBarsWithinDistance extends BarsEvent {
+  final double maxDistanceKm;
+
+  const LoadBarsWithinDistance(this.maxDistanceKm);
+
+  @override
+  List<Object?> get props => [maxDistanceKm];
+}
+
+/// Event to update distance filter
+class UpdateDistanceFilter extends BarsEvent {
+  final double maxDistanceKm;
+
+  const UpdateDistanceFilter(this.maxDistanceKm);
+
+  @override
+  List<Object?> get props => [maxDistanceKm];
+}

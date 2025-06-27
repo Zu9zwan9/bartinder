@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import '../theme/theme.dart';
 import '../widgets/bar_card.dart';
 import '../widgets/bar_detail_screen.dart';
 import '../widgets/heading_users_list.dart';
+import '../widgets/distance_filter_widget.dart';
 
 /// Screen for displaying and interacting with bars
 class BarsScreen extends StatefulWidget {
@@ -23,6 +25,8 @@ class BarsScreen extends StatefulWidget {
 class _BarsScreenState extends State<BarsScreen> {
   final CardSwiperController _cardController = CardSwiperController();
   late final BarsBloc _barsBloc;
+  bool _showDistanceFilter = false;
+  double _currentMaxDistance = 25.0;
 
   @override
   void initState() {
@@ -53,10 +57,29 @@ class _BarsScreenState extends State<BarsScreen> {
               color: AppTheme.textColor(context),
             ),
           ),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Icon(CupertinoIcons.refresh, color: AppTheme.primaryColor),
-            onPressed: () => _barsBloc.add(const RefreshBars()),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: Icon(
+                  CupertinoIcons.slider_horizontal_3,
+                  color: _showDistanceFilter
+                      ? AppTheme.primaryColor
+                      : AppTheme.textColor(context).withOpacity(0.6),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _showDistanceFilter = !_showDistanceFilter;
+                  });
+                },
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: Icon(CupertinoIcons.refresh, color: AppTheme.primaryColor),
+                onPressed: () => _barsBloc.add(const RefreshBars()),
+              ),
+            ],
           ),
           border: null, // Remove border to reduce space
         ),
@@ -87,7 +110,11 @@ class _BarsScreenState extends State<BarsScreen> {
               } else if (state is BarsLoaded) {
                 return state.bars.isEmpty
                     ? _buildEmptyState()
-                    : _buildBarsList(context, state.bars);
+                    : _buildBarsContent(context, state.bars);
+              } else if (state is BarsLoadedWithDistance) {
+                return state.bars.isEmpty
+                    ? _buildEmptyState()
+                    : _buildBarsContent(context, state.bars);
               } else if (state is BarsError) {
                 return Center(
                   child: Text(
@@ -112,14 +139,36 @@ class _BarsScreenState extends State<BarsScreen> {
     );
   }
 
+  Widget _buildBarsContent(BuildContext context, List<Bar> bars) {
+    return Column(
+      children: [
+        DistanceFilterWidget(
+          currentDistance: _currentMaxDistance,
+          isVisible: _showDistanceFilter,
+          onDistanceChanged: (distance) {
+            setState(() {
+              _currentMaxDistance = distance;
+            });
+            _barsBloc.add(UpdateDistanceFilter(distance));
+          },
+        ),
+        Expanded(
+          child: _buildBarsList(context, bars),
+        ),
+      ],
+    );
+  }
+
   Widget _buildBarsList(BuildContext context, List<Bar> bars) {
+    // Handle empty bars list - should not happen due to upstream checks, but safety first
+    if (bars.isEmpty) {
+      return _buildEmptyState();
+    }
+
     // Calculate safe layout dimensions
     final mediaQuery = MediaQuery.of(context);
-    final screenHeight = mediaQuery.size.height;
     final screenWidth = mediaQuery.size.width;
-    final navBarHeight = CupertinoNavigationBar().preferredSize.height;
     final bottomPadding = mediaQuery.padding.bottom;
-    final statusBarHeight = mediaQuery.padding.top;
 
     // Fixed height for action area - matches HomeScreen
     const actionAreaHeight = 100.0;
@@ -129,21 +178,16 @@ class _BarsScreenState extends State<BarsScreen> {
         bars.isNotEmpty && bars[0].usersHeadingThere.isNotEmpty;
     final headingUsersHeight = hasHeadingUsers ? 80.0 : 0.0;
 
-    // Calculate card area height with more conservative values
-    final availableHeight =
-        screenHeight - navBarHeight - statusBarHeight - bottomPadding;
-    final cardAreaHeight =
-        (availableHeight * 0.8) -
-        headingUsersHeight; // 80% of available height minus heading
+    // Calculate numberOfCardsDisplayed based on available bars
+    // Ensure it's at least 1 and no more than the number of bars available
+    final numberOfCardsDisplayed = math.min(3, bars.length).clamp(1, bars.length);
 
     return Stack(
       children: [
         Column(
           children: [
-            // Card swiper section with calculated height
-            SizedBox(
-              height: cardAreaHeight,
-              width: screenWidth,
+            // Card swiper section - use Expanded to take available space
+            Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: CardSwiper(
@@ -158,7 +202,7 @@ class _BarsScreenState extends State<BarsScreen> {
                     );
                     return true;
                   },
-                  numberOfCardsDisplayed: 3,
+                  numberOfCardsDisplayed: numberOfCardsDisplayed,
                   backCardOffset: const Offset(20, 20),
                   padding: const EdgeInsets.all(16),
                   cardBuilder:
@@ -176,37 +220,34 @@ class _BarsScreenState extends State<BarsScreen> {
 
             // Heading users section if applicable
             if (hasHeadingUsers)
-              SizedBox(
+              Container(
                 height: headingUsersHeight,
                 width: screenWidth,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'People heading to ${bars[0].name}:',
-                        style: AppTheme.subtitleStyle.copyWith(
-                          color: AppTheme.textColor(context),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'People heading to ${bars[0].name}:',
+                      style: AppTheme.subtitleStyle.copyWith(
+                        color: AppTheme.textColor(context),
                       ),
-                      const SizedBox(height: 4),
-                      SizedBox(
-                        height: 54, // Reduced height to fit properly
-                        child: HeadingUsersList(
-                          userIds: bars[0].usersHeadingThere,
-                        ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: HeadingUsersList(
+                        userIds: bars[0].usersHeadingThere,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
 
-            // Spacer to push content up
-            const Spacer(),
+            // Space for action buttons - fixed height to prevent overflow
+            SizedBox(height: actionAreaHeight + 20),
           ],
         ),
 

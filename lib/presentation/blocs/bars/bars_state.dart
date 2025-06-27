@@ -70,3 +70,24 @@ class LocationPermissionDenied extends BarsState {
 class LocationServicesDisabled extends BarsState {
   const LocationServicesDisabled();
 }
+
+/// Bars loaded with distance filter applied
+class BarsLoadedWithDistance extends BarsState {
+  final List<Bar> bars;
+  final double maxDistanceKm;
+
+  const BarsLoadedWithDistance(this.bars, this.maxDistanceKm);
+
+  @override
+  List<Object?> get props => [bars, maxDistanceKm];
+}
+
+/// Distance filter updated state
+class DistanceFilterUpdated extends BarsState {
+  final double maxDistanceKm;
+
+  const DistanceFilterUpdated(this.maxDistanceKm);
+
+  @override
+  List<Object?> get props => [maxDistanceKm];
+}

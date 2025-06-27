@@ -1,31 +1,35 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/user.dart' as app_user;
 import '../../domain/repositories/user_repository.dart';
-import '../datasources/mock_user_data_source.dart';
+import '../services/auth_service.dart';
 
-/// Implementation of the UserRepository interface using mock data
+/// Implementation of the UserRepository interface using Supabase database
 class UserRepositoryImpl implements UserRepository {
-  final MockUserDataSource _dataSource;
+  final SupabaseClient _supabase;
 
-  UserRepositoryImpl({MockUserDataSource? dataSource})
-    : _dataSource = dataSource ?? MockUserDataSource();
+  UserRepositoryImpl({SupabaseClient? supabase})
+    : _supabase = supabase ?? Supabase.instance.client;
 
   @override
   Future<List<app_user.User>> getUsers() async {
-    final supabase = Supabase.instance.client;
-    final response = await supabase.from('users').select().limit(100);
-    List data = [];
-    data = response;
-    if (data.isNotEmpty) {
+    try {
+      final currentUserId = AuthService.currentUserId;
+      final response = await _supabase
+          .from('users_with_location')
+          .select()
+          .neq('id', currentUserId ?? '')
+          .limit(100);
+
+      final List<dynamic> data = response as List<dynamic>;
+
       final users = data
           .map(
             (item) => app_user.User(
               id: item['id']?.toString() ?? '',
               name: item['name'] ?? '',
               age: int.tryParse(item['age']?.toString() ?? '') ?? 0,
-              photoUrl: item['photoUrl'] ?? '',
+              photoUrl: item['photoUrl'] ?? item['avatar_url'] ?? '',
               favoriteBeer: item['favoriteBeer'] ?? '',
               bio: item['bio'],
               lastCheckedInLocation: item['lastCheckedInLocation'],
@@ -34,46 +38,107 @@ class UserRepositoryImpl implements UserRepository {
                   : null,
               beerPreferences: (item['beerPreferences'] is List)
                   ? List<String>.from(item['beerPreferences'])
+                  : (item['interests'] is List)
+                      ? List<String>.from(item['interests'])
+                      : [],
+              latitude: (item['latitude'] as num?)?.toDouble(),
+              longitude: (item['longitude'] as num?)?.toDouble(),
+              email: item['email'],
+              phone: item['phone'],
+              avatarUrl: item['avatar_url'],
+              gender: item['gender'],
+              city: item['city'],
+              country: item['country'],
+              interests: (item['interests'] is List)
+                  ? List<String>.from(item['interests'])
                   : [],
+              birthDate: item['birth_date'] != null
+                  ? DateTime.tryParse(item['birth_date'])
+                  : null,
+              isPremium: item['is_premium'] ?? false,
+              lastActiveAt: item['last_active_at'] != null
+                  ? DateTime.tryParse(item['last_active_at'])
+                  : null,
             ),
           )
           .toList();
       return users;
+    } catch (e) {
+      throw Exception('Failed to load users: $e');
     }
-    return _dataSource.getUsers();
   }
 
   @override
   Future<void> likeUser(String userId) async {
-    // todo In a real app, we would store this in a database
-    final prefs = await SharedPreferences.getInstance();
-    final likedUsers = prefs.getStringList('liked_users') ?? [];
-    if (!likedUsers.contains(userId)) {
-      likedUsers.add(userId);
-      await prefs.setStringList('liked_users', likedUsers);
+    try {
+      final currentUserId = AuthService.currentUserId;
+      if (currentUserId == null) throw Exception('User not authenticated');
+
+      await _supabase.from('likes').upsert({
+        'from_user': currentUserId,
+        'to_user': userId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      throw Exception('Failed to like user: $e');
     }
   }
 
   @override
   Future<void> dislikeUser(String userId) async {
-    // todo In a real app, we would store this in a database
-    final prefs = await SharedPreferences.getInstance();
-    final dislikedUsers = prefs.getStringList('disliked_users') ?? [];
-    if (!dislikedUsers.contains(userId)) {
-      dislikedUsers.add(userId);
-      await prefs.setStringList('disliked_users', dislikedUsers);
+    try {
+      final currentUserId = AuthService.currentUserId;
+      if (currentUserId == null) throw Exception('User not authenticated');
+
+      // Remove like if it exists
+      await _supabase.from('likes').delete()
+          .eq('from_user', currentUserId)
+          .eq('to_user', userId);
+
+      // Add dislike record
+      await _supabase.from('dislikes').upsert({
+        'from_user': currentUserId,
+        'to_user': userId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      throw Exception('Failed to dislike user: $e');
     }
   }
 
   @override
   Future<List<String>> getMatches() async {
-    // todo In a real app, we would check if users we liked also liked us
-    // For now, we'll just return a subset of the liked users as "matches"
-    final prefs = await SharedPreferences.getInstance();
-    final likedUsers = prefs.getStringList('liked_users') ?? [];
+    try {
+      final currentUserId = AuthService.currentUserId;
+      if (currentUserId == null) throw Exception('User not authenticated');
 
-    // Simulate that some of the liked users also liked us back
-    return likedUsers.take(likedUsers.length ~/ 2).toList();
+      // Get users that current user liked
+      final outgoingLikes = await _supabase
+          .from('likes')
+          .select('to_user')
+          .eq('from_user', currentUserId);
+
+      final likedUserIds = (outgoingLikes as List<dynamic>)
+          .map((e) => e['to_user'] as String)
+          .toList();
+
+      if (likedUserIds.isEmpty) return [];
+
+      // Get users that liked current user back (mutual likes)
+      final incomingLikes = await _supabase
+          .from('likes')
+          .select('from_user')
+          .eq('to_user', currentUserId)
+          .inFilter('from_user', likedUserIds);
+
+      final matchedUserIds = (incomingLikes as List<dynamic>)
+          .map((e) => e['from_user'] as String)
+          .toList();
+
+      return matchedUserIds;
+    } catch (e) {
+      throw Exception('Failed to get matches: $e');
+    }
   }
 
   // Добавим метод для сохранения пользователя в Supabase

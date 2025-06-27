@@ -19,6 +19,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
   final DislikeBarUseCase _dislikeBarUseCase;
   final CheckInBarUseCase _checkInBarUseCase;
   final GeolocationService _geolocationService;
+  final BarRepositoryImpl _barRepository;
 
   BarsBloc({
     required GetBarsUseCase getBarsUseCase,
@@ -27,12 +28,14 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     required DislikeBarUseCase dislikeBarUseCase,
     required CheckInBarUseCase checkInBarUseCase,
     required GeolocationService geolocationService,
+    required BarRepositoryImpl barRepository,
   }) : _getBarsUseCase = getBarsUseCase,
        _getBarByIdUseCase = getBarByIdUseCase,
        _likeBarUseCase = likeBarUseCase,
        _dislikeBarUseCase = dislikeBarUseCase,
        _checkInBarUseCase = checkInBarUseCase,
        _geolocationService = geolocationService,
+       _barRepository = barRepository,
        super(const BarsInitial()) {
     on<LoadBars>(_onLoadBars);
     on<RefreshBars>(_onRefreshBars);
@@ -40,6 +43,8 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     on<DislikeBar>(_onDislikeBar);
     on<CheckInBar>(_onCheckInBar);
     on<ViewBarDetails>(_onViewBarDetails);
+    on<LoadBarsWithinDistance>(_onLoadBarsWithinDistance);
+    on<UpdateDistanceFilter>(_onUpdateDistanceFilter);
   }
 
   /// Convenience constructor with default dependencies
@@ -54,6 +59,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
       dislikeBarUseCase: DislikeBarUseCase(barRepository),
       checkInBarUseCase: CheckInBarUseCase(barRepository),
       geolocationService: geolocationService,
+      barRepository: barRepository,
     );
   }
 
@@ -99,12 +105,21 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
         return;
       }
 
-      // Get bars
+      // Get bars and calculate distances based on current position
       final bars = await _getBarsUseCase.execute();
 
-      // TODO In a real app, we would update the distances based on the current position
-      // For now, we'll just return the bars as they are
-      emit(BarsLoaded(bars));
+      // Calculate the distance to each bar dynamically
+      final barsWithDistance = bars.map((bar) {
+        final distance = Geolocator.distanceBetween(
+          position.latitude,
+          position.longitude,
+          bar.latitude,
+          bar.longitude,
+        ) / 1000; // Convert meters to kilometers
+        return bar.copyWith(distance: distance);
+      }).toList();
+
+      emit(BarsLoaded(barsWithDistance));
     } catch (e) {
       emit(BarsError('Failed to refresh bars: ${e.toString()}'));
     }
@@ -163,5 +178,42 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     } catch (e) {
       emit(BarsError('Failed to load bar details: ${e.toString()}'));
     }
+  }
+
+  Future<void> _onLoadBarsWithinDistance(
+    LoadBarsWithinDistance event,
+    Emitter<BarsState> emit,
+  ) async {
+    emit(const BarsLoading());
+    try {
+      // Get the current location of the user
+      final Position? position = await _geolocationService.getCurrentPosition();
+      if (position == null) {
+        emit(const BarsError('Could not get current location'));
+        return;
+      }
+
+      // Get bars within the specified distance using the repository method
+      final bars = await _barRepository.getBarsWithinDistance(
+        userLatitude: position.latitude,
+        userLongitude: position.longitude,
+        maxDistanceKm: event.maxDistanceKm,
+      );
+
+      emit(BarsLoadedWithDistance(bars, event.maxDistanceKm));
+    } catch (e) {
+      emit(BarsError('Failed to load bars within distance: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onUpdateDistanceFilter(
+    UpdateDistanceFilter event,
+    Emitter<BarsState> emit,
+  ) async {
+    // Update the distance filter and reload bars
+    emit(DistanceFilterUpdated(event.maxDistanceKm));
+
+    // Automatically reload bars with the new distance filter
+    add(LoadBarsWithinDistance(event.maxDistanceKm));
   }
 }

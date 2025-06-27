@@ -1,75 +1,105 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/bar.dart';
 import '../../domain/repositories/bar_repository.dart';
-import '../datasources/mock_bar_data_source.dart';
+import '../datasources/supabase_bar_data_source.dart';
+import '../services/auth_service.dart';
 
-/// Implementation of the BarRepository interface using mock data
+/// Implementation of the BarRepository interface using Supabase database
 class BarRepositoryImpl implements BarRepository {
-  final MockBarDataSource _dataSource;
+  final SupabaseBarDataSource _dataSource;
+  final SupabaseClient _supabase;
 
-  BarRepositoryImpl({MockBarDataSource? dataSource})
-    : _dataSource = dataSource ?? MockBarDataSource();
+  BarRepositoryImpl({SupabaseBarDataSource? dataSource})
+    : _dataSource = dataSource ?? SupabaseBarDataSource(),
+      _supabase = Supabase.instance.client;
 
   @override
   Future<List<Bar>> getBars() async {
-    // TODO In a real app, we would filter based on user preferences and location
-    return _dataSource.getBars();
+    return await _dataSource.getBars();
   }
 
   @override
   Future<Bar?> getBarById(String barId) async {
-    final bars = _dataSource.getBars();
-    try {
-      return bars.firstWhere((bar) => bar.id == barId);
-    } catch (e) {
-      return null;
-    }
+    return await _dataSource.getBarById(barId);
+  }
+
+  /// Get bars within a specific distance from user location
+  Future<List<Bar>> getBarsWithinDistance({
+    required double userLatitude,
+    required double userLongitude,
+    required double maxDistanceKm,
+  }) async {
+    return await _dataSource.getBarsWithinDistance(
+      userLatitude: userLatitude,
+      userLongitude: userLongitude,
+      maxDistanceKm: maxDistanceKm,
+    );
   }
 
   @override
   Future<void> likeBar(String barId) async {
-    // TODO In a real app, we would store this in a database
-    final prefs = await SharedPreferences.getInstance();
-    final likedBars = prefs.getStringList('liked_bars') ?? [];
-    if (!likedBars.contains(barId)) {
-      likedBars.add(barId);
-      await prefs.setStringList('liked_bars', likedBars);
+    try {
+      final userId = AuthService.currentUserId;
+      if (userId == null) throw Exception('User not authenticated');
+
+      await _supabase.from('bar_likes').upsert({
+        'user_id': userId,
+        'bar_id': barId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      throw Exception('Failed to like bar: $e');
     }
   }
 
   @override
   Future<void> dislikeBar(String barId) async {
-    // TODO  In a real app, we would store this in a database
-    final prefs = await SharedPreferences.getInstance();
-    final dislikedBars = prefs.getStringList('disliked_bars') ?? [];
-    if (!dislikedBars.contains(barId)) {
-      dislikedBars.add(barId);
-      await prefs.setStringList('disliked_bars', dislikedBars);
+    try {
+      final userId = AuthService.currentUserId;
+      if (userId == null) throw Exception('User not authenticated');
+
+      // Remove like if it exists and add dislike
+      await _supabase.from('bar_likes').delete()
+          .eq('user_id', userId)
+          .eq('bar_id', barId);
+
+      await _supabase.from('bar_dislikes').upsert({
+        'user_id': userId,
+        'bar_id': barId,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      throw Exception('Failed to dislike bar: $e');
     }
   }
 
   @override
   Future<void> checkIn(String barId) async {
-    // TODO In a real app, we would store this in a database with timestamp
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_checkin', barId);
-    await prefs.setInt(
-      'last_checkin_time',
-      DateTime.now().millisecondsSinceEpoch,
-    );
+    try {
+      final userId = AuthService.currentUserId;
+      if (userId == null) throw Exception('User not authenticated');
+
+      final timestamp = DateTime.now().toIso8601String();
+
+      await _supabase.from('bar_checkins').insert({
+        'user_id': userId,
+        'bar_id': barId,
+        'checked_in_at': timestamp,
+      });
+
+      // Update user's last check-in location
+      await _supabase.from('users').update({
+        'last_checkin_bar_id': barId,
+        'last_checkin_at': timestamp,
+      }).eq('id', userId);
+    } catch (e) {
+      throw Exception('Failed to check in to bar: $e');
+    }
   }
 
   @override
   Future<List<Bar>> getBarsWithPlannedVisits() async {
-    // TODO In a real app, we would query a database for bars with planned visits
-    // For now, we'll just return bars that have plannedVisitorsCount > 0
-    final bars = _dataSource.getBars();
-    return bars
-        .where(
-          (bar) =>
-              bar.plannedVisitorsCount != null && bar.plannedVisitorsCount! > 0,
-        )
-        .toList();
+    return await _dataSource.getBarsWithPlannedVisits();
   }
 }
