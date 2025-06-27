@@ -7,6 +7,7 @@ import '../blocs/chat/chat_bloc.dart';
 import '../blocs/chat/chat_event.dart';
 import '../blocs/chat/chat_state.dart';
 import '../theme/theme.dart';
+import 'package:intl/intl.dart';
 
 class ChatScreen extends StatelessWidget {
   final domain.User matchedUser;
@@ -16,8 +17,8 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          ChatBloc.withDefaultDependencies(matchedUser.id)
-            ..add(const LoadMessages()),
+      ChatBloc.withDefaultDependencies(matchedUser.id)
+        ..add(const LoadMessages()),
       child: _ChatScreenContent(matchedUser: matchedUser),
     );
   }
@@ -35,7 +36,6 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? _editingMessageId;
-  String? _editingInitialText;
 
   @override
   void dispose() {
@@ -99,9 +99,20 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
         title: const Text('Edit Message'),
-        content: CupertinoTextField(
-          controller: editController,
-          autofocus: true,
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: CupertinoTextField(
+            controller: editController,
+            autofocus: true,
+            placeholder: 'Enter message',
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppTheme.isDarkMode(context)
+                  ? AppTheme.darkSurfaceColor
+                  : AppTheme.systemGray6(context),
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
         ),
         actions: [
           CupertinoDialogAction(
@@ -131,11 +142,11 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
     final diff = today.difference(messageDay).inDays;
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Yesterday';
-    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+    return DateFormat('dd.MM.yyyy').format(date);
   }
 
   String _formatTime(DateTime date) {
-    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    return DateFormat('HH:mm').format(date);
   }
 
   @override
@@ -146,13 +157,17 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(
           widget.matchedUser.name,
-          style: AppTheme.navTitle.copyWith(color: AppTheme.textColor(context)),
+          style: AppTheme.navTitle.copyWith(
+            color: AppTheme.textColor(context),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         previousPageTitle: 'Back',
         backgroundColor: AppTheme.isDarkMode(context)
             ? AppTheme.darkCardColor
             : Colors.white,
         border: null,
+        padding: const EdgeInsetsDirectional.only(start: 8, end: 8),
       ),
       child: SafeArea(
         child: Column(
@@ -160,7 +175,9 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
             Expanded(
               child: BlocConsumer<ChatBloc, ChatState>(
                 listener: (context, state) {
-                  if (state is ChatLoaded) _scrollToBottom();
+                  if (state is ChatLoaded) {
+                    _scrollToBottom();
+                  }
                 },
                 builder: (context, state) {
                   if (state is ChatLoading) {
@@ -169,6 +186,7 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                         color: AppTheme.isDarkMode(context)
                             ? AppTheme.primaryColor
                             : AppTheme.primaryDarkColor,
+                        radius: 14,
                       ),
                     );
                   } else if (state is ChatError) {
@@ -177,7 +195,9 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                         state.message,
                         style: AppTheme.bodyStyle.copyWith(
                           color: AppTheme.errorColor(context),
+                          fontSize: 16,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     );
                   } else if (state is ChatLoaded) {
@@ -188,6 +208,7 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                           'Start a conversation!',
                           style: AppTheme.bodyStyle.copyWith(
                             color: AppTheme.secondaryTextColor(context),
+                            fontSize: 16,
                           ),
                         ),
                       );
@@ -198,19 +219,32 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                       final message = messages[i];
                       final isMe = message.senderId == currentUserId;
                       final showDateSeparator = lastDate == null ||
-                        lastDate.year != message.createdAt.year ||
-                        lastDate.month != message.createdAt.month ||
-                        lastDate.day != message.createdAt.day;
+                          lastDate.year != message.createdAt.year ||
+                          lastDate.month != message.createdAt.month ||
+                          lastDate.day != message.createdAt.day;
                       if (showDateSeparator) {
                         messageWidgets.add(
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
                             child: Center(
-                              child: Text(
-                                _formatDateSeparator(message.createdAt),
-                                style: AppTheme.bodyStyle.copyWith(
-                                  color: AppTheme.secondaryTextColor(context),
-                                  fontWeight: FontWeight.w600,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.isDarkMode(context)
+                                      ? AppTheme.systemGray4(context)
+                                      : AppTheme.systemGray5(context),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  _formatDateSeparator(message.createdAt),
+                                  style: AppTheme.bodyStyle.copyWith(
+                                    color: AppTheme.secondaryTextColor(context),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
@@ -221,21 +255,34 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                       messageWidgets.add(
                         GestureDetector(
                           onLongPress: isMe
-                              ? () => _showMessageActions(context, message.id, message.text ?? message.content ?? '')
+                              ? () => _showMessageActions(
+                            context,
+                            message.id,
+                            message.text ?? message.content ?? '',
+                          )
                               : null,
                           child: Align(
                             alignment: isMe
                                 ? Alignment.centerRight
                                 : Alignment.centerLeft,
                             child: Container(
-                              margin: const EdgeInsets.symmetric(vertical: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width * 0.75,
+                              ),
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 4,
+                                horizontal: 12,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: isMe
                                     ? AppTheme.systemBlue(context)
                                     : AppTheme.isDarkMode(context)
-                                        ? AppTheme.systemGray4(context)
-                                        : AppTheme.systemGray5(context),
+                                    ? AppTheme.systemGray4(context)
+                                    : AppTheme.systemGray5(context),
                                 borderRadius: BorderRadius.circular(18),
                               ),
                               child: Row(
@@ -246,7 +293,10 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                                     child: Text(
                                       message.text ?? message.content ?? '',
                                       style: AppTheme.bodyStyle.copyWith(
-                                        color: isMe ? Colors.white : AppTheme.textColor(context),
+                                        color: isMe
+                                            ? Colors.white
+                                            : AppTheme.textColor(context),
+                                        fontSize: 16,
                                         decoration: TextDecoration.none,
                                       ),
                                     ),
@@ -255,7 +305,9 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                                   Text(
                                     _formatTime(message.createdAt),
                                     style: AppTheme.bodyStyle.copyWith(
-                                      color: isMe ? Colors.white70 : AppTheme.secondaryTextColor(context),
+                                      color: isMe
+                                          ? Colors.white70
+                                          : AppTheme.secondaryTextColor(context),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -268,7 +320,7 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                     }
                     return ListView(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       children: messageWidgets,
                     );
                   }
@@ -277,18 +329,20 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                       'Start a conversation!',
                       style: AppTheme.bodyStyle.copyWith(
                         color: AppTheme.secondaryTextColor(context),
+                        fontSize: 16,
                       ),
                     ),
                   );
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 12,
-                right: 8,
-                top: 8,
-                bottom: 12,
+            Container(
+              color: AppTheme.isDarkMode(context)
+                  ? AppTheme.darkCardColor
+                  : Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
               ),
               child: Row(
                 children: [
@@ -300,9 +354,11 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                         color: AppTheme.isDarkMode(context)
                             ? AppTheme.darkSecondaryTextColor
                             : AppTheme.lightSecondaryTextColor,
+                        fontSize: 16,
                       ),
                       style: AppTheme.bodyStyle.copyWith(
                         color: AppTheme.textColor(context),
+                        fontSize: 16,
                       ),
                       padding: const EdgeInsets.symmetric(
                         vertical: 12,
@@ -315,6 +371,8 @@ class _ChatScreenContentState extends State<_ChatScreenContent> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       onSubmitted: (_) => _sendMessage(),
+                      minLines: 1,
+                      maxLines: 5,
                     ),
                   ),
                   const SizedBox(width: 8),

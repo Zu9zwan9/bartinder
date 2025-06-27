@@ -181,7 +181,7 @@ class SupabaseBarDataSource {
         hasDiscount: partner && discount > 0,
         discountPercentage: discount > 0 ? discount : null,
         plannedVisitorsCount: (json['planned_visitors_count'] as num?)?.toInt() ?? _generatePlannedVisitors(),
-        crowdLevel: json['crowd_level'] as String? ?? _generateCrowdLevel(),
+        crowdLevel: _normalizeCrowdLevel(json['crowd_level'] as String?) ?? _generateCrowdLevel(),
         usersHeadingThere: [],
         events: [], // In a real app, this would come from events table
       );
@@ -244,6 +244,16 @@ class SupabaseBarDataSource {
   String _generateCrowdLevel() {
     final levels = ['Low', 'Medium', 'High'];
     return levels[DateTime.now().millisecond % 3];
+  }
+
+  /// Normalize crowd level to standard values
+  String? _normalizeCrowdLevel(String? value) {
+    if (value == null) return null;
+    final normalized = value.toLowerCase();
+    if (normalized == 'low') return 'Low';
+    if (normalized == 'medium' || normalized == 'moderate') return 'Medium';
+    if (normalized == 'high' || normalized == 'busy') return 'High';
+    return null;
   }
 
   /// Clear cached data to force refresh
