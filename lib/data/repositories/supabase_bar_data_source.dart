@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/bar.dart';
 
@@ -181,12 +182,14 @@ class SupabaseBarDataSource {
         hasDiscount: partner && discount > 0,
         discountPercentage: discount > 0 ? discount : null,
         plannedVisitorsCount: (json['planned_visitors_count'] as num?)?.toInt() ?? _generatePlannedVisitors(),
-        crowdLevel: _normalizeCrowdLevel(json['crowd_level'] as String?) ?? _generateCrowdLevel(),
+        crowdLevel: _normalizeCrowdLevel(json['crowd_level']?.toString()) ?? _generateCrowdLevel(),
         usersHeadingThere: [],
         events: [], // In a real app, this would come from events table
       );
     } catch (e) {
-      print('Error parsing bar from Supabase: $e');
+      if (kDebugMode) {
+        print('Error parsing bar from Supabase: $e');
+      }
       return null;
     }
   }
