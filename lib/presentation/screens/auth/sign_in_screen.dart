@@ -101,7 +101,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
 
                   Text(
-                    'Find your perfect bar match',
+                    'Sip. Swipe. Repeat.',
                     style: AppTheme.subhead.copyWith(
                       color: AppTheme.secondaryTextColor(context),
                     ),
@@ -270,6 +270,32 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
 
                   const SizedBox(height: 32),
+
+                  // Apple Sign In Button
+                  CupertinoButton(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(8),
+                    onPressed: () {
+                      context.read<AuthBloc>().add(const AuthAppleSignInRequested());
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          CupertinoIcons.device_phone_portrait,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Continue with Apple',
+                          style: AppTheme.button.copyWith(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
 
                   // Sign Up Button
                   CupertinoButton(

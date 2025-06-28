@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'storage_service.dart';
 
 /// Custom exception for authentication errors
@@ -30,7 +31,7 @@ class AuthResult<T> {
       AuthResult._(error: error, isSuccess: false);
 }
 
-/// Production-ready Supabase authentication service
+/// Supabase authentication service
 class AuthService {
   static final SupabaseClient _supabase = Supabase.instance.client;
 
@@ -289,6 +290,108 @@ class AuthService {
       }
       return AuthResult.failure(
         AuthException(code: 'signout_failed', message: 'Sign out failed: $e'),
+      );
+    }
+  }
+
+  /// Sign in with Apple (supports both iOS native and web OAuth)
+  static Future<AuthResult<User>> signInWithApple() async {
+    try {
+      if (kDebugMode) {
+        print('Attempting Apple Sign In');
+      }
+
+      // Check if Apple Sign In is available
+      if (!await SignInWithApple.isAvailable()) {
+        return AuthResult.failure(
+          const AuthException(
+            code: 'apple_signin_unavailable',
+            message: 'Apple Sign In is not available on this device',
+          ),
+        );
+      }
+
+      // Get Apple ID credential
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'com.7wells.sipswipe',
+          redirectUri: Uri.parse('https://rzsxqtmbgppentouocpi.supabase.co/auth/v1/callback'),
+        ),
+      );
+
+      if (kDebugMode) {
+        print('Apple ID credential obtained: ${credential.userIdentifier}');
+      }
+
+      // Create JWT token for Supabase
+      final response = await _supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: credential.identityToken!,
+        nonce: credential.state,
+      );
+
+      if (response.user != null) {
+        if (kDebugMode) {
+          print('Apple Sign In successful: ${response.user!.id}');
+        }
+
+        // Extract user information from Apple credential
+        final fullName = credential.givenName != null && credential.familyName != null
+            ? '${credential.givenName} ${credential.familyName}'
+            : null;
+
+        final avatarUrl = generateRandomAvatar();
+
+        // Ensure user exists in 'users' table
+        await _supabase.from('users').upsert({
+          'id': response.user!.id,
+          'email': credential.email ?? response.user!.email,
+          'name': fullName ??
+                  credential.email?.split('@').first ??
+                  response.user!.email?.split('@').first ??
+                  'Apple User',
+          'password_hash': '',
+          'avatar_url': avatarUrl,
+          'provider': 'apple',
+        });
+
+        return AuthResult.success(response.user!);
+      } else {
+        return AuthResult.failure(
+          const AuthException(
+            code: 'apple_signin_failed',
+            message: 'Apple Sign In failed: No user returned',
+          ),
+        );
+      }
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (kDebugMode) {
+        print('Apple Sign In authorization failed: $e');
+      }
+      return AuthResult.failure(
+        AuthException(
+          code: 'apple_authorization_failed',
+          message: 'Apple authorization failed: ${e.message}',
+        ),
+      );
+    } on AuthException catch (e) {
+      if (kDebugMode) {
+        print('Apple Sign In failed: $e');
+      }
+      return AuthResult.failure(e);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Apple Sign In failed with unexpected error: $e');
+      }
+      return AuthResult.failure(
+        AuthException(
+          code: 'unknown_error',
+          message: 'An unexpected error occurred during Apple Sign In: $e',
+        ),
       );
     }
   }

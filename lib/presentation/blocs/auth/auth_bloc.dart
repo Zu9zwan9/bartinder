@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../data/services/auth_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -22,6 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthStatusRequested>(_onAuthStatusRequested);
     on<AuthSignUpRequested>(_onAuthSignUpRequested);
     on<AuthSignInRequested>(_onAuthSignInRequested);
+    on<AuthAppleSignInRequested>(_onAuthAppleSignInRequested);
     on<AuthSignOutRequested>(_onAuthSignOutRequested);
     on<AuthPasswordResetRequested>(_onAuthPasswordResetRequested);
     on<AuthPasswordUpdateRequested>(_onAuthPasswordUpdateRequested);
@@ -128,6 +130,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           code: 'unknown_error',
         ),
       );
+    }
+  }
+
+  /// Handle Apple Sign In request
+  Future<void> _onAuthAppleSignInRequested(
+    AuthAppleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthInProgress(operation: 'Signing in with Apple...'));
+
+    try {
+      final result = await AuthService.signInWithApple();
+
+      if (result.isSuccess && result.data != null) {
+        emit(AuthAuthenticated(user: result.data!));
+      } else {
+        emit(
+          AuthFailure(
+            error: result.error?.message ?? 'Apple Sign In failed',
+            code: result.error?.code,
+          ),
+        );
+      }
+    } catch (e) {
+      if (e is SignInWithAppleAuthorizationException) {
+        emit(
+          AuthFailure(
+            error: 'Apple authorization failed: ${e.message}',
+            code: e.code.toString(),
+          ),
+        );
+      } else {
+        if (kDebugMode) {
+          print('Apple Sign In error: $e');
+        }
+        emit(
+          AuthFailure(
+            error: 'An unexpected error occurred during Apple Sign In',
+            code: 'unknown_error',
+          ),
+        );
+      }
     }
   }
 

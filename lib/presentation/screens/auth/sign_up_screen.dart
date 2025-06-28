@@ -349,6 +349,61 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   const SizedBox(height: 32),
 
+                  // Divider
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppTheme.dividerColor(context),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'or',
+                          style: AppTheme.caption1.copyWith(
+                            color: AppTheme.secondaryTextColor(context),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppTheme.dividerColor(context),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Apple Sign In Button
+                  CupertinoButton(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(8),
+                    onPressed: () {
+                      context.read<AuthBloc>().add(const AuthAppleSignInRequested());
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          CupertinoIcons.device_phone_portrait,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Continue with Apple',
+                          style: AppTheme.button.copyWith(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
                   // Sign In Button
                   CupertinoButton(
                     padding: EdgeInsets.zero,

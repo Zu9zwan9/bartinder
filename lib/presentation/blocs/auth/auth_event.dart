@@ -42,6 +42,11 @@ class AuthSignInRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+/// Event to sign in with Apple
+class AuthAppleSignInRequested extends AuthEvent {
+  const AuthAppleSignInRequested();
+}
+
 /// Event to sign out
 class AuthSignOutRequested extends AuthEvent {
   const AuthSignOutRequested();
