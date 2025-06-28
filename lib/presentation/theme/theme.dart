@@ -134,6 +134,8 @@ class AppTheme {
       dynamicColor(context, lightErrorColor, darkErrorColor);
   static Color successColor(BuildContext context) =>
       dynamicColor(context, lightSuccessColor, darkSuccessColor);
+  static Color secondaryColor(BuildContext context) =>
+      dynamicColor(context, accentColor, accentDarkColor);
   static Color systemBlue(BuildContext context) =>
       dynamicColor(context, systemBlueLight, systemBlueDark);
   static Color systemGreen(BuildContext context) =>
@@ -181,6 +183,7 @@ class AppTheme {
   static final TextStyle headlineStyle = title1;
   static final TextStyle buttonStyle = button;
   static final TextStyle smallStyle = subhead;
+  static final TextStyle smallText = caption1; // Добавлено для работы с маркерами карты
 
   static const double glassmorphismBlur = 10.0;
 

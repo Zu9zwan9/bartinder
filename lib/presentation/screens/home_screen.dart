@@ -476,9 +476,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(CupertinoIcons.slider_horizontal_3, size: 16),
+                        const Icon(CupertinoIcons.slider_horizontal_3, size: 16, color: CupertinoColors.black),
                         const SizedBox(width: 8),
-                        const Text('Change Filter', style: TextStyle(fontSize: 14)),
+                        const Text('Change Filter', style: TextStyle(fontSize: 14, color: CupertinoColors.black)),
                       ],
                     ),
                   ),

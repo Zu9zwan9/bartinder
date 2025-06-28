@@ -70,10 +70,15 @@ class LoadBarsWithinDistance extends BarsEvent {
 
 /// Event to update distance filter
 class UpdateDistanceFilter extends BarsEvent {
-  final double maxDistanceKm;
+  final double maxDistance;
 
-  const UpdateDistanceFilter(this.maxDistanceKm);
+  const UpdateDistanceFilter(this.maxDistance);
 
   @override
-  List<Object?> get props => [maxDistanceKm];
+  List<Object?> get props => [maxDistance];
+}
+
+/// Event to refresh user location only
+class RefreshUserLocation extends BarsEvent {
+  const RefreshUserLocation();
 }

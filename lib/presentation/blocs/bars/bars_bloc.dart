@@ -211,9 +211,9 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     Emitter<BarsState> emit,
   ) async {
     // Update the distance filter and reload bars
-    emit(DistanceFilterUpdated(event.maxDistanceKm));
+    emit(DistanceFilterUpdated(event.maxDistance));
 
     // Automatically reload bars with the new distance filter
-    add(LoadBarsWithinDistance(event.maxDistanceKm));
+    add(LoadBarsWithinDistance(event.maxDistance));
   }
 }

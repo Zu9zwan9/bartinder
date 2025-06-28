@@ -13,6 +13,11 @@ class SupabaseBarDataSource {
 
   /// Returns a list of bars from the Supabase database
   Future<List<Bar>> getBars() async {
+    // Возвращаем данные из кэша, если они доступны
+    if (_cachedBars != null) {
+      return _cachedBars!;
+    }
+
     try {
       final response = await _supabase
           .from('bars')
