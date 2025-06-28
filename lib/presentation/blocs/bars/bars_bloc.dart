@@ -1,13 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../data/repositories/bar_repository_impl.dart';
+import '../../../data/repositories/user_location_repository_impl.dart';
 import '../../../data/services/geolocation_service.dart';
+import '../../../domain/entities/user_location.dart';
+import '../../../domain/repositories/user_location_repository.dart';
 import '../../../domain/usecases/check_in_bar_usecase.dart';
 import '../../../domain/usecases/dislike_bar_usecase.dart';
 import '../../../domain/usecases/get_bar_by_id_usecase.dart';
 import '../../../domain/usecases/get_bars_usecase.dart';
 import '../../../domain/usecases/like_bar_usecase.dart';
+import '../../../domain/usecases/save_user_location_usecase.dart';
 import 'bars_event.dart';
 import 'bars_state.dart';
 
@@ -20,6 +26,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
   final CheckInBarUseCase _checkInBarUseCase;
   final GeolocationService _geolocationService;
   final BarRepositoryImpl _barRepository;
+  final SaveUserLocationUseCase _saveUserLocationUseCase;
 
   BarsBloc({
     required GetBarsUseCase getBarsUseCase,
@@ -29,6 +36,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     required CheckInBarUseCase checkInBarUseCase,
     required GeolocationService geolocationService,
     required BarRepositoryImpl barRepository,
+    required SaveUserLocationUseCase saveUserLocationUseCase,
   }) : _getBarsUseCase = getBarsUseCase,
        _getBarByIdUseCase = getBarByIdUseCase,
        _likeBarUseCase = likeBarUseCase,
@@ -36,6 +44,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
        _checkInBarUseCase = checkInBarUseCase,
        _geolocationService = geolocationService,
        _barRepository = barRepository,
+       _saveUserLocationUseCase = saveUserLocationUseCase,
        super(const BarsInitial()) {
     on<LoadBars>(_onLoadBars);
     on<RefreshBars>(_onRefreshBars);
@@ -45,12 +54,14 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
     on<ViewBarDetails>(_onViewBarDetails);
     on<LoadBarsWithinDistance>(_onLoadBarsWithinDistance);
     on<UpdateDistanceFilter>(_onUpdateDistanceFilter);
+    on<RefreshUserLocation>(_onRefreshUserLocation);
   }
 
   /// Convenience constructor with default dependencies
   factory BarsBloc.withDefaultDependencies() {
     final barRepository = BarRepositoryImpl();
     final geolocationService = GeolocationService();
+    final userLocationRepository = UserLocationRepositoryImpl();
 
     return BarsBloc(
       getBarsUseCase: GetBarsUseCase(barRepository),
@@ -60,6 +71,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
       checkInBarUseCase: CheckInBarUseCase(barRepository),
       geolocationService: geolocationService,
       barRepository: barRepository,
+      saveUserLocationUseCase: SaveUserLocationUseCase(userLocationRepository),
     );
   }
 
@@ -69,7 +81,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
       // Get the current location of the user
       final Position? position = await _geolocationService.getCurrentPosition();
       if (position == null) {
-        emit(const BarsError('Could not get current location'));
+        emit(BarsError('Could not get current location'));
         return;
       }
 
@@ -101,7 +113,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
       // Get current position
       final position = await _geolocationService.getCurrentPosition();
       if (position == null) {
-        emit(const BarsError('Could not get current location'));
+        emit(BarsError('Could not get current location'));
         return;
       }
 
@@ -189,7 +201,7 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
       // Get the current location of the user
       final Position? position = await _geolocationService.getCurrentPosition();
       if (position == null) {
-        emit(const BarsError('Could not get current location'));
+        emit(BarsError('Could not get current location'));
         return;
       }
 
@@ -215,5 +227,44 @@ class BarsBloc extends Bloc<BarsEvent, BarsState> {
 
     // Automatically reload bars with the new distance filter
     add(LoadBarsWithinDistance(event.maxDistance));
+  }
+
+  Future<void> _onRefreshUserLocation(
+    RefreshUserLocation event,
+    Emitter<BarsState> emit,
+  ) async {
+    try {
+      emit(const BarsLoading());
+
+      // Get the current location of the user
+      final Position? position = await _geolocationService.getCurrentPosition();
+      if (position == null) {
+        emit(BarsError('Could not get current location'));
+        return;
+      }
+
+      // Get the current authenticated user ID
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser == null) {
+        emit(BarsError('User not authenticated'));
+        return;
+      }
+
+      // Save the location
+      final userLocation = UserLocation(
+        id: const Uuid().v4(), // Generate a proper UUID
+        userId: currentUser.id, // Use actual authenticated user ID
+        latitude: position.latitude,
+        longitude: position.longitude,
+        timestamp: DateTime.now(),
+        isCurrentLocation: true, // Mark as current location
+      );
+      await _saveUserLocationUseCase.execute(userLocation);
+
+      // Reload bars
+      add(const LoadBars());
+    } catch (e) {
+      emit(BarsError('Failed to refresh user location: ${e.toString()}'));
+    }
   }
 }

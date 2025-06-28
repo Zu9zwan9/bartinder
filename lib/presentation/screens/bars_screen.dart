@@ -207,7 +207,7 @@ class _BarsScreenState extends State<BarsScreen> {
             children: [
               // Слой карты (тайлы)
               TileLayer(
-                urlTemplate: 'https://api.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey={apiKey}',
+                urlTemplate: 'https://api.geoapify.com/v1/tile/klokantech-basic/{z}/{x}/{y}.png?apiKey={apiKey}',
                 additionalOptions: {
                   'apiKey': _geoapifyApiKey,
                 },
