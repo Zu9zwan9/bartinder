@@ -3,7 +3,7 @@
 A Flutter application for beer enthusiasts to discover and rate their favorite brews with a familiar swipe interface.
 
 <p align="center">
-  <img src="031812A4-10FE-475C-8210-F2FCE40FD34A.png" alt="SipSwipe Banner" width="300"/>
+  <img src="assets/images/icon.png" alt="SipSwipe Banner" width="300"/>
 </p>
 
 ## 📝 Description
