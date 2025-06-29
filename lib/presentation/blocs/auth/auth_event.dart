@@ -47,6 +47,11 @@ class AuthAppleSignInRequested extends AuthEvent {
   const AuthAppleSignInRequested();
 }
 
+/// Event to sign in with Google
+class AuthGoogleSignInRequested extends AuthEvent {
+  const AuthGoogleSignInRequested();
+}
+
 /// Event to sign out
 class AuthSignOutRequested extends AuthEvent {
   const AuthSignOutRequested();

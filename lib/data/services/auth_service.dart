@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'storage_service.dart';
 
 /// Custom exception for authentication errors
@@ -34,6 +35,7 @@ class AuthResult<T> {
 /// Supabase authentication service
 class AuthService {
   static final SupabaseClient _supabase = Supabase.instance.client;
+
 
   // Stream controller for auth state changes
   static final StreamController<User?> _authStateController =
@@ -391,6 +393,111 @@ class AuthService {
         AuthException(
           code: 'unknown_error',
           message: 'An unexpected error occurred during Apple Sign In: $e',
+        ),
+      );
+    }
+  }
+
+  /// Sign in with Google using Supabase OAuth (Production Ready with Updated Credentials)
+  static Future<AuthResult<User>> signInWithGoogle() async {
+    try {
+      if (kDebugMode) {
+        print('Attempting Google Sign In via Supabase OAuth');
+      }
+
+      // Create a completer to wait for the OAuth result
+      final Completer<AuthResult<User>> completer = Completer<AuthResult<User>>();
+
+      // Listen for auth state changes during OAuth
+      late StreamSubscription<AuthState> authSubscription;
+      authSubscription = _supabase.auth.onAuthStateChange.listen((data) {
+        final user = data.session?.user;
+        if (user != null && !completer.isCompleted) {
+          if (kDebugMode) {
+            print('Google OAuth successful: ${user.id}');
+          }
+
+          // Generate random avatar for new users
+          final avatarUrl = user.userMetadata?['avatar_url'] as String? ??
+                           user.userMetadata?['picture'] as String? ??
+                           generateRandomAvatar();
+
+          // Ensure user exists in 'users' table
+          _supabase.from('users').upsert({
+            'id': user.id,
+            'email': user.email,
+            'name': user.userMetadata?['full_name'] as String? ??
+                   user.userMetadata?['name'] as String? ??
+                   user.email?.split('@').first ?? 'Google User',
+            'password_hash': '',
+            'avatar_url': avatarUrl,
+            'provider': 'google',
+          }).then((_) {
+            completer.complete(AuthResult.success(user));
+            authSubscription.cancel();
+          }).catchError((error) {
+            if (kDebugMode) {
+              print('Error updating user table: $error');
+            }
+            // Still complete successfully even if user table update fails
+            completer.complete(AuthResult.success(user));
+            authSubscription.cancel();
+          });
+        }
+      });
+
+      // Set a timeout for the OAuth process
+      Timer(const Duration(minutes: 5), () {
+        if (!completer.isCompleted) {
+          authSubscription.cancel();
+          completer.complete(AuthResult.failure(
+            const AuthException(
+              code: 'google_oauth_timeout',
+              message: 'Google OAuth process timed out',
+            ),
+          ));
+        }
+      });
+
+      // Initiate OAuth flow with correct Supabase redirect URI
+      final response = await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: kIsWeb
+            ? 'https://rzsxqtmbgppentouocpi.supabase.co/auth/v1/callback'
+            : 'com.7wells.sipswipe://login-callback/',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+        queryParams: {
+          'access_type': 'offline',
+          'prompt': 'consent',
+        },
+      );
+
+      if (!response) {
+        authSubscription.cancel();
+        return AuthResult.failure(
+          const AuthException(
+            code: 'google_oauth_failed',
+            message: 'Failed to initiate Google OAuth',
+          ),
+        );
+      }
+
+      if (kDebugMode) {
+        print('Google OAuth initiated, waiting for completion...');
+      }
+
+      // Wait for the OAuth process to complete
+      return await completer.future;
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('Google Sign In failed with error: $e');
+      }
+
+      return AuthResult.failure(
+        AuthException(
+          code: 'unknown_error',
+          message: 'An unexpected error occurred during Google Sign In: $e',
         ),
       );
     }

@@ -24,6 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignUpRequested>(_onAuthSignUpRequested);
     on<AuthSignInRequested>(_onAuthSignInRequested);
     on<AuthAppleSignInRequested>(_onAuthAppleSignInRequested);
+    on<AuthGoogleSignInRequested>(_onAuthGoogleSignInRequested);
     on<AuthSignOutRequested>(_onAuthSignOutRequested);
     on<AuthPasswordResetRequested>(_onAuthPasswordResetRequested);
     on<AuthPasswordUpdateRequested>(_onAuthPasswordUpdateRequested);
@@ -172,6 +173,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ),
         );
       }
+    }
+  }
+
+  /// Handle Google Sign In request
+  Future<void> _onAuthGoogleSignInRequested(
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthInProgress(operation: 'Signing in with Google...'));
+
+    try {
+      final result = await AuthService.signInWithGoogle();
+
+      if (result.isSuccess && result.data != null) {
+        emit(AuthAuthenticated(user: result.data!));
+      } else {
+        emit(
+          AuthFailure(
+            error: result.error?.message ?? 'Google Sign In failed',
+            code: result.error?.code,
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Google Sign In error: $e');
+      }
+      emit(
+        AuthFailure(
+          error: 'An unexpected error occurred during Google Sign In',
+          code: 'unknown_error',
+        ),
+      );
     }
   }
 

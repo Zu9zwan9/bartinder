@@ -70,10 +70,13 @@ dependencies:
   uuid: ^4.2.1   # Added for uuid dependency
 
   # Supabase
-  supabase_flutter: ^2.3.4
+  supabase_flutter: ^2.9.1
 
   # Apple Sign In
   sign_in_with_apple: ^7.0.1
+
+  # Google Sign In
+  google_sign_in: ^7.0.0
 
   # Image picker
   image_picker: ^1.0.7

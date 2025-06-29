@@ -404,6 +404,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   const SizedBox(height: 16),
 
+                  // Google Sign In Button
+                  CupertinoButton(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    onPressed: () {
+                      context.read<AuthBloc>().add(const AuthGoogleSignInRequested());
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage('https://developers.google.com/identity/images/g-logo.png'),
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Continue with Google',
+                          style: AppTheme.button.copyWith(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
                   // Sign In Button
                   CupertinoButton(
                     padding: EdgeInsets.zero,

@@ -1,0 +1,43 @@
+{
+  "project_info": {
+    "project_number": "1046627473008",
+    "project_id": "sipswipe",
+    "storage_bucket": "sipswipe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1046627473008:android:fa56eca160c1ea5aa3d275",
+        "android_client_info": {
+          "package_name": "com.7wells.sipswipe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1046627473008-mrje8kt06rha23jnun9qjs8gn2o7j603.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.7wells.sipswipe",
+            "certificate_hash": "SHA1:A1:B2:C3:D4:E5:F6:G7:H8:I9:J0:K1:L2:M3:N4:O5:P6:Q7:R8:S9:T0"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSdlBZTQxDOHYotOdqH348oqwG2lHdcGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1046627473008-mrje8kt06rha23jnun9qjs8gn2o7j603.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

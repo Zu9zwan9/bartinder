@@ -45,5 +45,8 @@ app.*.map.json
 /android/app/release
 /lib/google-services.json
 .env
+assets/*.env
 /test/
 /lib/data/datasources/
+client_secret_1046627473008-mrje8kt06rha23jnun9qjs8gn2o7j603.apps.googleusercontent.com.json
+google-services.json
