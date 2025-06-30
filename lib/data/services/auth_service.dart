@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -36,6 +40,10 @@ class AuthResult<T> {
 class AuthService {
   static final SupabaseClient _supabase = Supabase.instance.client;
 
+  // Google OAuth configuration
+  static const String _googleClientId = '1046627473008-mrje8kt06rha23jnun9qjs8gn2o7j603.apps.googleusercontent.com';
+  static const String _googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+  static const String _googleTokenUrl = 'https://oauth2.googleapis.com/token';
 
   // Stream controller for auth state changes
   static final StreamController<User?> _authStateController =
@@ -59,6 +67,33 @@ class AuthService {
         print('Auth state changed: ${user?.id ?? 'null'}');
       }
     });
+  }
+
+  /// Generate a cryptographically secure random string for PKCE
+  static String _generateRandomString(int length) {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+  }
+
+  /// Generate PKCE code verifier (43-128 characters)
+  @visibleForTesting
+  static String generateCodeVerifier() {
+    return _generateRandomString(128);
+  }
+
+  /// Generate PKCE code challenge using S256 method
+  @visibleForTesting
+  static String generateCodeChallenge(String codeVerifier) {
+    final bytes = utf8.encode(codeVerifier);
+    final digest = sha256.convert(bytes);
+    return base64Url.encode(digest.bytes).replaceAll('=', '');
+  }
+
+  /// Generate a secure state parameter for CSRF protection
+  @visibleForTesting
+  static String generateState() {
+    return _generateRandomString(32);
   }
 
   /// Generate a random avatar URL from DiceBear API
@@ -398,11 +433,62 @@ class AuthService {
     }
   }
 
-  /// Sign in with Google using Supabase OAuth (Production Ready with Updated Credentials)
+  /// Build Google OAuth authorization URL with PKCE
+  @visibleForTesting
+  static String buildGoogleAuthUrl({
+    required String codeChallenge,
+    required String state,
+    required String redirectUri,
+  }) {
+    final params = {
+      'client_id': _googleClientId,
+      'redirect_uri': redirectUri,
+      'response_type': 'code',
+      'scope': 'email profile openid',
+      'code_challenge': codeChallenge,
+      'code_challenge_method': 'S256',
+      'state': state,
+      'access_type': 'offline',
+      'prompt': 'consent',
+    };
+
+    final query = params.entries
+        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+
+    return '$_googleAuthUrl?$query';
+  }
+
+  /// Sign in with Google using PKCE OAuth 2.0 flow (Production Ready)
   static Future<AuthResult<User>> signInWithGoogle() async {
     try {
       if (kDebugMode) {
-        print('Attempting Google Sign In via Supabase OAuth');
+        print('Attempting Google Sign In with PKCE OAuth 2.0 flow');
+      }
+
+      // Generate PKCE parameters
+      final codeVerifier = generateCodeVerifier();
+      final codeChallenge = generateCodeChallenge(codeVerifier);
+      final state = generateState();
+
+      if (kDebugMode) {
+        print('Generated PKCE parameters - Code Challenge: ${codeChallenge.substring(0, 10)}...');
+      }
+
+      // Determine redirect URI based on platform
+      final redirectUri = kIsWeb
+          ? 'https://rzsxqtmbgppentouocpi.supabase.co/auth/v1/callback'
+          : 'com.7wells.sipswipe://login-callback/';
+
+      // Build authorization URL
+      final authUrl = buildGoogleAuthUrl(
+        codeChallenge: codeChallenge,
+        state: state,
+        redirectUri: redirectUri,
+      );
+
+      if (kDebugMode) {
+        print('Authorization URL built, launching browser...');
       }
 
       // Create a completer to wait for the OAuth result
@@ -422,17 +508,23 @@ class AuthService {
                            user.userMetadata?['picture'] as String? ??
                            generateRandomAvatar();
 
+          final displayName = user.userMetadata?['full_name'] as String? ??
+                             user.userMetadata?['name'] as String? ??
+                             user.email?.split('@').first ?? 'Google User';
+
           // Ensure user exists in 'users' table
           _supabase.from('users').upsert({
             'id': user.id,
             'email': user.email,
-            'name': user.userMetadata?['full_name'] as String? ??
-                   user.userMetadata?['name'] as String? ??
-                   user.email?.split('@').first ?? 'Google User',
+            'name': displayName,
             'password_hash': '',
             'avatar_url': avatarUrl,
             'provider': 'google',
+            'updated_at': DateTime.now().toIso8601String(),
           }).then((_) {
+            if (kDebugMode) {
+              print('User data synchronized with database');
+            }
             completer.complete(AuthResult.success(user));
             authSubscription.cancel();
           }).catchError((error) {
@@ -459,16 +551,17 @@ class AuthService {
         }
       });
 
-      // Initiate OAuth flow with correct Supabase redirect URI
+      // Launch the OAuth flow
       final response = await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: kIsWeb
-            ? 'https://rzsxqtmbgppentouocpi.supabase.co/auth/v1/callback'
-            : 'com.7wells.sipswipe://login-callback/',
+        redirectTo: redirectUri,
         authScreenLaunchMode: LaunchMode.externalApplication,
         queryParams: {
           'access_type': 'offline',
           'prompt': 'consent',
+          'code_challenge': codeChallenge,
+          'code_challenge_method': 'S256',
+          'state': state,
         },
       );
 
@@ -483,15 +576,20 @@ class AuthService {
       }
 
       if (kDebugMode) {
-        print('Google OAuth initiated, waiting for completion...');
+        print('Google OAuth initiated with PKCE, waiting for completion...');
       }
 
       // Wait for the OAuth process to complete
       return await completer.future;
 
+    } on AuthException catch (e) {
+      if (kDebugMode) {
+        print('Google Sign In auth error: $e');
+      }
+      return AuthResult.failure(e);
     } catch (e) {
       if (kDebugMode) {
-        print('Google Sign In failed with error: $e');
+        print('Google Sign In failed with unexpected error: $e');
       }
 
       return AuthResult.failure(

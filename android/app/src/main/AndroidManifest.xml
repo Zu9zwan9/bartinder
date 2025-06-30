@@ -32,7 +32,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.7wells.sipswipe" />
+                <data android:scheme="com.u7wells.sipswipe" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

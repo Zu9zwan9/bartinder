@@ -68,6 +68,7 @@ dependencies:
   url_launcher: ^6.2.5
   path: ^1.8.3  # Added for path dependency
   uuid: ^4.2.1   # Added for uuid dependency
+  crypto: ^3.0.3  # Added for PKCE implementation
 
   # Supabase
   supabase_flutter: ^2.9.1
